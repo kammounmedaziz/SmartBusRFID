@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import morgan from "morgan";
 import cardRoutes from "./routes/cardRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 
 dotenv.config();
@@ -25,6 +26,9 @@ app.use("/api/cards", cardRoutes);
 
 // Auth routes
 app.use("/auth", authRoutes);
+
+// Admin routes (users, reports)
+app.use('/api', adminRoutes);
 
 // Error handler (last)
 app.use(errorHandler);

@@ -1,4 +1,6 @@
 import React, { useState } from 'react'
+import { apiFetch } from '../api'
+import { isPositiveNumber, isNonEmpty } from '../utils/validate'
 
 export default function PayForm({ token, onDone }) {
   const [uid, setUid] = useState('')
@@ -8,20 +10,16 @@ export default function PayForm({ token, onDone }) {
   async function submit(e) {
     e.preventDefault()
     setMsg(null)
+    if (!isNonEmpty(uid)) return setMsg('UID is required')
+    if (!isPositiveNumber(amount)) return setMsg('Amount must be positive')
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/cards/pay`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ uid, amount: Number(amount) }),
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.message || 'Failed')
+      await apiFetch('/api/cards/pay', token, { method: 'POST', body: JSON.stringify({ uid, amount: Number(amount) }) })
       setMsg('Payment recorded')
       setUid('')
       setAmount(0)
       onDone()
     } catch (err) {
-      setMsg(err.message)
+      setMsg(err.message || 'Failed')
     }
   }
 
@@ -31,7 +29,7 @@ export default function PayForm({ token, onDone }) {
       <input placeholder="UID" value={uid} onChange={(e) => setUid(e.target.value)} />
       <input placeholder="Amount" type="number" value={amount} onChange={(e) => setAmount(e.target.value)} />
       <button type="submit">Pay</button>
-      {msg && <p>{msg}</p>}
+      {msg && <p className="error">{msg}</p>}
     </form>
   )
 }

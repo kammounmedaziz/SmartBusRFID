@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { apiFetch } from '../api'
+import { isNonEmpty, isPositiveNumber } from '../utils/validate'
 
 export default function CreateCard({ token, onDone }) {
   const [uid, setUid] = useState('')
@@ -9,6 +10,15 @@ export default function CreateCard({ token, onDone }) {
 
   async function submit(e) {
     e.preventDefault()
+    setMsg(null)
+    if (!isNonEmpty(uid) || !isNonEmpty(cardNumber)) {
+      setMsg('UID and card number are required')
+      return
+    }
+    if (!isPositiveNumber(balance)) {
+      setMsg('Balance must be a positive number')
+      return
+    }
     try {
       const body = { uid, card_number: cardNumber, balance: Number(balance) }
       await apiFetch('/api/cards', token, { method: 'POST', body: JSON.stringify(body) })

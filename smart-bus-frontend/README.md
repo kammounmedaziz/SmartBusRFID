@@ -42,3 +42,14 @@ app.use(cors())
 ```
 
 - Tokens are stored in `localStorage` under `sb_token`.
+
+## Line endings (Windows users)
+
+If you see Git warnings about LF ↔ CRLF, run these from the repository root to enforce LF in the repo:
+
+```powershell
+git add .gitattributes
+git commit -m "Add .gitattributes" || true
+git add --renormalize .
+git commit -m "Normalize line endings"
+```
