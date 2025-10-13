@@ -1,0 +1,5 @@
+body { font-family: system-ui, sans-serif; padding: 1rem; }
+.app header { display:flex; justify-content:space-between; align-items:center }
+.cards { display:grid; grid-template-columns:1fr 1fr; gap:1rem }
+.form { display:flex; flex-direction:column; gap:.5rem; }
+.error { color: red }
