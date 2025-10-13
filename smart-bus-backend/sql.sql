@@ -6,7 +6,7 @@ CREATE TABLE users (
   name VARCHAR(100),
   email VARCHAR(100) UNIQUE,
   password_hash VARCHAR(255),
-  role ENUM('admin','operator') DEFAULT 'operator'
+  role ENUM('admin','operator','user') DEFAULT 'user'
 );
 
 CREATE TABLE cards (

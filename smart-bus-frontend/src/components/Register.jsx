@@ -2,7 +2,8 @@ import React, { useState } from 'react'
 import { apiFetch } from '../api'
 import { useNavigate } from 'react-router-dom'
 
-export default function Login({ onLogin }) {
+export default function Register({ onRegistered, onLogin }) {
+  const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState(null)
@@ -12,27 +13,32 @@ export default function Login({ onLogin }) {
     e.preventDefault()
     setError(null)
     try {
-      const data = await apiFetch('/auth/login', null, { method: 'POST', body: JSON.stringify({ email, password }) })
-      const token = data.token
-      onLogin(token)
-      // fetch user info and redirect
+      const data = await apiFetch('/auth/register', null, { method: 'POST', body: JSON.stringify({ name, email, password }) })
+      // attempt to login immediately
       try {
+        const login = await apiFetch('/auth/login', null, { method: 'POST', body: JSON.stringify({ email, password }) })
+        const token = login.token
+        onLogin?.(token)
+        // fetch me and redirect
         const me = await apiFetch('/auth/me', token)
   if (me.role === 'admin') navigate('/dashboard', { replace: true })
   else navigate('/client-dashboard', { replace: true })
       } catch (_) {
-        // fallback
-  navigate('/client-dashboard', { replace: true })
+        onRegistered(data)
       }
     } catch (err) {
-      setError(err.error || err.message || 'Invalid credentials')
+      setError(err.error || err.message || 'Registration failed')
     }
   }
 
   return (
-    <div className="login">
-      <h2>Sign In</h2>
+    <div className="register">
+      <h2>Create account</h2>
       <form onSubmit={submit}>
+        <label>
+          Name
+          <input value={name} onChange={(e) => setName(e.target.value)} />
+        </label>
         <label>
           Email
           <input value={email} onChange={(e) => setEmail(e.target.value)} />
@@ -41,7 +47,7 @@ export default function Login({ onLogin }) {
           Password
           <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
         </label>
-        <button type="submit">Sign in</button>
+        <button type="submit">Create account</button>
         {error && <p className="error">{error}</p>}
       </form>
     </div>

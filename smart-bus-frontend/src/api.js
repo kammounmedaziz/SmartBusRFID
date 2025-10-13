@@ -1,5 +1,6 @@
 export function apiFetch(path, token, options = {}) {
-  const base = import.meta.env.VITE_API_URL || ''
+  // Default to localhost backend when VITE_API_URL isn't provided in the env.
+  const base = import.meta.env.VITE_API_URL || 'http://localhost:5000'
   const url = base + path
   const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) }
   if (token) headers.Authorization = `Bearer ${token}`

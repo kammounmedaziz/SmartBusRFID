@@ -1,28 +1,36 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import Logo from './Logo'
 
-export default function Nav({ token, onLogout }) {
+export default function Nav({ token, me, onLogout }) {
+  const location = useLocation()
+  const path = location.pathname || ''
+  const showLogout = token && (path === '/dashboard' || path === '/client-dashboard' || path === '/account')
+
   return (
     <nav className="nav">
-      <div style={{display:'flex',alignItems:'center',gap:12}}>
+      <div className="nav-left">
         <Logo size={36} />
         <div className="brand">SmartBus</div>
       </div>
-      <div className="links">
+
+      <div className="nav-links">
         <Link to="/">Home</Link>
-        <Link to="/about">About</Link>
         {token ? (
           <>
+            <Link to="/account">Account</Link>
             <Link to="/dashboard">Dashboard</Link>
-            <Link to="/users">Users</Link>
-            <Link to="/reports">Reports</Link>
           </>
         ) : (
-          <Link to="/auth">Sign in</Link>
+          <>
+            <Link to="/auth">Sign in</Link>
+          </>
         )}
       </div>
-      {token && <button className="btn-logout" onClick={onLogout}>Logout</button>}
+
+      <div className="nav-actions">
+        {showLogout && <button className="btn-logout" onClick={onLogout}>Logout</button>}
+      </div>
     </nav>
   )
 }

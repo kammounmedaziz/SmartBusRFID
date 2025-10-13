@@ -5,7 +5,7 @@ import CreateCard from './CreateCard'
 import Transactions from './Transactions'
 import { apiFetch } from '../api'
 
-export default function Cards({ token }) {
+export default function Cards({ token, me }) {
   const [cards, setCards] = useState([])
   const [transactions, setTransactions] = useState([])
   const [filter, setFilter] = useState('')
@@ -68,7 +68,7 @@ export default function Cards({ token }) {
       </section>
 
       <section>
-        <CreateCard token={token} onDone={() => { load(); loadTx() }} />
+  <CreateCard token={token} me={me} onDone={() => { load(); loadTx() }} />
         <RechargeForm token={token} onDone={() => { load(); loadTx() }} />
         <PayForm token={token} onDone={() => { load(); loadTx() }} />
       </section>

@@ -18,9 +18,14 @@ export const findByEmail = async (email) => {
   return rows[0] ?? null;
 };
 
+export const findById = async (id) => {
+  const [rows] = await db.query('SELECT * FROM users WHERE id = ?', [id]);
+  return rows[0] ?? null;
+};
+
 export const existsByEmail = async (email) => {
   const [rows] = await db.query('SELECT id FROM users WHERE email = ?', [email]);
   return rows.length > 0;
 };
 
-export default { create, getAll, findByEmail, existsByEmail };
+export default { create, getAll, findByEmail, findById, existsByEmail };

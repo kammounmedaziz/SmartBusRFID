@@ -1,11 +1,19 @@
-import React from 'react'
+import React, { useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import Login from '../components/Login'
+import Register from '../components/Register'
 
 export default function AuthPage({ onLogin }) {
+  const [search] = useSearchParams()
+  const initial = search.get('mode') === 'register' ? 'register' : 'login'
+  const [mode, setMode] = useState(initial)
   return (
     <div className="page auth">
-      <h2>Sign in</h2>
-      <Login onLogin={onLogin} />
+      <div style={{display:'flex',gap:12,alignItems:'center'}}>
+        <button onClick={() => setMode('login')}>Sign in</button>
+        <button onClick={() => setMode('register')}>Sign up</button>
+      </div>
+      {mode === 'login' ? <Login onLogin={onLogin} /> : <Register onRegistered={() => setMode('login')} onLogin={onLogin} />}
     </div>
   )
 }

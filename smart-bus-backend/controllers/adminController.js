@@ -40,4 +40,4 @@ export const reportsFareByDay = async (req, res) => {
   }
 }
 
-export default { listUsers, reportsFareByDay }
+export default { listUsers, createUser, reportsFareByDay }
