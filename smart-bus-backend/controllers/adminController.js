@@ -1,10 +1,26 @@
 import User from '../models/userModel.js'
 import db from '../config/db.js'
+import bcrypt from 'bcrypt'
 
 export const listUsers = async (req, res) => {
   try {
     const users = await User.getAll()
     res.json(users)
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ error: 'Server error' })
+  }
+}
+
+export const createUser = async (req, res) => {
+  try {
+    const { name, email, password, role = 'operator' } = req.body || {}
+    if (!email || !password) return res.status(400).json({ error: 'email and password required' })
+    const exists = await User.existsByEmail(email)
+    if (exists) return res.status(409).json({ error: 'user already exists' })
+    const hash = await bcrypt.hash(password, 10)
+    const id = await User.create({ name, email, password_hash: hash, role })
+    res.status(201).json({ id, email, name, role })
   } catch (err) {
     console.error(err)
     res.status(500).json({ error: 'Server error' })

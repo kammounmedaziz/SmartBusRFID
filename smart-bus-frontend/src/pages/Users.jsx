@@ -1,21 +1,32 @@
 import React, { useEffect, useState } from 'react'
 import { apiFetch } from '../api'
+import CreateUser from '../components/CreateUser'
 
 export default function Users({ token }) {
   const [users, setUsers] = useState([])
 
-  useEffect(() => {
-    let mounted = true
-    apiFetch('/api/users', token).then((data) => { if (mounted) setUsers(data) }).catch(()=>{})
-    return ()=> mounted = false
-  }, [])
+  async function load(){
+    try{
+      const data = await apiFetch('/api/users', token)
+      setUsers(data)
+    }catch(e){}
+  }
+
+  useEffect(() => { load() }, [token])
 
   return (
     <div className="page users">
       <h2>Users</h2>
-      <ul>
-        {users.map(u => <li key={u.id}>{u.email} — {u.role}</li>)}
-      </ul>
+      <div style={{display:'flex',gap:12}}>
+        <div style={{flex:1}}>
+          <ul>
+            {users.map(u => <li key={u.id}>{u.email} — {u.role}</li>)}
+          </ul>
+        </div>
+        <div style={{width:340}}>
+          <CreateUser token={token} onDone={load} />
+        </div>
+      </div>
     </div>
   )
 }
