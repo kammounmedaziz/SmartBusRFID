@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import Login from '../components/Login'
-import Register from '../components/Register'
+import Login from '../components/auth/Login'
+import Register from '../components/auth/Register'
 
 export default function AuthPage({ onLogin }) {
   const [search] = useSearchParams()

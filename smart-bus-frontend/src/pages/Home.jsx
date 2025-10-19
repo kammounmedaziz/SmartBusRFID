@@ -83,7 +83,6 @@ function HomeInner() {
 
         <div className="cta-group">
           <CTAButton to="/auth" text="Sign In" />
-          <CTAButton to="/auth?mode=register" text="Sign Up" />
         </div>
       </div>
 

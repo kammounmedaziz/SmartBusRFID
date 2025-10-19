@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { apiFetch } from '../api'
-import CreateUser from '../components/CreateUser'
+import CreateUser from '../components/users/CreateUser'
 
 export default function Users({ token }) {
   const [users, setUsers] = useState([])

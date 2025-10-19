@@ -1,0 +1,12 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom theme tokens for tailwind (optional) */
+:root{
+  --glass: rgba(255,255,255,0.04);
+}
+
+.futuristic-bg{
+  background: radial-gradient(circle at 10% 20%, rgba(110,243,255,0.02), transparent 8%), radial-gradient(circle at 90% 80%, rgba(155,110,255,0.02), transparent 10%), #02030a;
+}
