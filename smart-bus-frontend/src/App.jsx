@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import Nav from './components/ui/Nav'
 import Sidebar from './components/ui/Sidebar'
 import Account from './pages/Account'
@@ -11,6 +11,50 @@ import Reports from './pages/Reports'
 import ClientDashboard from './pages/ClientDashboard'
 import Dashboard from './pages/Dashboard'
 import { apiFetch } from './api'
+
+function AppContent({ token, me, handleLogin, handleLogout }) {
+  const location = useLocation()
+  const showNav = location.pathname !== '/auth'
+
+  return (
+    <>
+      {/* If a normal client is signed in, show the sidebar layout */}
+      {me?.role === 'user' ? (
+        <div className="app-with-sidebar">
+          <Sidebar onLogout={handleLogout} />
+          <main className="content">
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/auth" element={<AuthPage onLogin={handleLogin} />} />
+              <Route path="/client-dashboard" element={token ? <ClientDashboard token={token} me={me} /> : <Navigate to="/auth" replace />} />
+              <Route path="/account" element={token ? <Account token={token} me={me} /> : <Navigate to="/auth" replace />} />
+              <Route path="/dashboard" element={token ? <Dashboard token={token} me={me} /> : <Navigate to="/auth" replace />} />
+              <Route path="/users" element={token && me?.role === 'admin' ? <Users token={token} /> : <Navigate to="/auth" replace />} />
+              <Route path="/reports" element={token && me?.role === 'admin' ? <Reports token={token} /> : <Navigate to="/auth" replace />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </main>
+        </div>
+      ) : (
+        <>
+          {showNav && <Nav token={token} me={me} onLogout={handleLogout} />}
+          <main>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/auth" element={<AuthPage onLogin={handleLogin} />} />
+              <Route path="/client-dashboard" element={token ? <ClientDashboard token={token} me={me} /> : <Navigate to="/auth" replace />} />
+              <Route path="/account" element={token ? <Account token={token} me={me} /> : <Navigate to="/auth" replace />} />
+              <Route path="/dashboard" element={token ? <Dashboard token={token} me={me} /> : <Navigate to="/auth" replace />} />
+              <Route path="/users" element={token && me?.role === 'admin' ? <Users token={token} /> : <Navigate to="/auth" replace />} />
+              <Route path="/reports" element={token && me?.role === 'admin' ? <Reports token={token} /> : <Navigate to="/auth" replace />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </main>
+        </>
+      )}
+    </>
+  )
+}
 
 export default function App() {
   const [token, setToken] = useState(null)
@@ -39,40 +83,9 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      {/* If a normal client is signed in, show the sidebar layout */}
-      {me?.role === 'user' ? (
-        <div className="app-with-sidebar">
-          <Sidebar onLogout={handleLogout} />
-          <main className="content">
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/auth" element={<AuthPage onLogin={handleLogin} />} />
-              <Route path="/client-dashboard" element={token ? <ClientDashboard token={token} me={me} /> : <Navigate to="/auth" replace />} />
-              <Route path="/account" element={token ? <Account token={token} me={me} /> : <Navigate to="/auth" replace />} />
-              <Route path="/dashboard" element={token ? <Dashboard token={token} me={me} /> : <Navigate to="/auth" replace />} />
-              <Route path="/users" element={token && me?.role === 'admin' ? <Users token={token} /> : <Navigate to="/auth" replace />} />
-              <Route path="/reports" element={token && me?.role === 'admin' ? <Reports token={token} /> : <Navigate to="/auth" replace />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </main>
-        </div>
-      ) : (
-        <>
-          <Nav token={token} me={me} onLogout={handleLogout} />
-          <main>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/auth" element={<AuthPage onLogin={handleLogin} />} />
-              <Route path="/client-dashboard" element={token ? <ClientDashboard token={token} me={me} /> : <Navigate to="/auth" replace />} />
-              <Route path="/account" element={token ? <Account token={token} me={me} /> : <Navigate to="/auth" replace />} />
-              <Route path="/dashboard" element={token ? <Dashboard token={token} me={me} /> : <Navigate to="/auth" replace />} />
-              <Route path="/users" element={token && me?.role === 'admin' ? <Users token={token} /> : <Navigate to="/auth" replace />} />
-              <Route path="/reports" element={token && me?.role === 'admin' ? <Reports token={token} /> : <Navigate to="/auth" replace />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </main>
-        </>
-      )}
+      <AppContent token={token} me={me} handleLogin={handleLogin} handleLogout={handleLogout} />
     </BrowserRouter>
   )
 }
+
+

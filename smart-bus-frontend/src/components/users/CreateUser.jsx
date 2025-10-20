@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
-import { apiFetch } from '../api'
-import { isNonEmpty, isPositiveNumber } from '../utils/validate'
+import { apiFetch } from '../../api.js'
+import { isNonEmpty, isPositiveNumber } from '../../utils/validate.js'
 
 export default function CreateUser({ token, onDone }){
   const [name,setName]=useState('')
@@ -36,3 +36,5 @@ export default function CreateUser({ token, onDone }){
     </form>
   )
 }
+
+

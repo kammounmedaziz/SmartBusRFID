@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
-import { apiFetch } from '../api'
-import { isNonEmpty, isPositiveNumber } from '../utils/validate'
+import { apiFetch } from '../../api.js'
+import { isNonEmpty, isPositiveNumber } from '../../utils/validate.js'
 
 export default function CreateCard({ token, me, onDone }) {
   const [uid, setUid] = useState('')
@@ -64,3 +64,5 @@ export default function CreateCard({ token, me, onDone }) {
     </form>
   )
 }
+
+

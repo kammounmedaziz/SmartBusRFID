@@ -3,7 +3,7 @@ import RechargeForm from './RechargeForm'
 import PayForm from './PayForm'
 import CreateCard from './CreateCard'
 import Transactions from './Transactions'
-import { apiFetch } from '../api'
+import { apiFetch } from '../../api.js'
 
 export default function Cards({ token, me }) {
   const [cards, setCards] = useState([])
@@ -79,3 +79,5 @@ export default function Cards({ token, me }) {
     </div>
   )
 }
+
+

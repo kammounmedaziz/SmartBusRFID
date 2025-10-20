@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
-import { apiFetch } from '../api'
-import { isPositiveNumber, isNonEmpty } from '../utils/validate'
+import { apiFetch } from '../../api.js'
+import { isPositiveNumber, isNonEmpty } from '../../utils/validate.js'
 
 export default function PayForm({ token, onDone }) {
   const [uid, setUid] = useState('')
@@ -33,3 +33,5 @@ export default function PayForm({ token, onDone }) {
     </form>
   )
 }
+
+

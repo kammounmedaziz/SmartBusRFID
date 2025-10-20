@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
-import QRGenerate from '../components/QRGenerate'
-import QRScan from '../components/QRScan'
-import { apiFetch } from '../api'
+import QRGenerate from '../components/client-dashboard/QRGenerate'
+import QRScan from '../components/client-dashboard/QRScan'
+import { apiFetch } from '../api.js'
 
 export default function Account({ token, me }) {
   const [cards, setCards] = useState([])
@@ -127,3 +127,5 @@ export default function Account({ token, me }) {
     </div>
   )
 }
+
+

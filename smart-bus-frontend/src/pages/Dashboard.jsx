@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { apiFetch } from '../api'
+import { apiFetch } from '../api.js'
 
 export default function Dashboard({ token, me }) {
   const [stats, setStats] = useState({ cards: 0, transactions: 0, revenue: 0 })
@@ -22,3 +22,5 @@ export default function Dashboard({ token, me }) {
     </div>
   )
 }
+
+

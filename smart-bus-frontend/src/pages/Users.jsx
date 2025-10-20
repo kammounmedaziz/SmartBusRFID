@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { apiFetch } from '../api'
+import { apiFetch } from '../api.js'
 import CreateUser from '../components/users/CreateUser'
 
 export default function Users({ token }) {
@@ -54,3 +54,5 @@ export default function Users({ token }) {
     </div>
   )
 }
+
+

@@ -79,11 +79,7 @@ function HomeInner() {
           <span className="typing-text">{text}</span>
           <span className="cursor">|</span>
         </div>
-        <p className="subtitle">Create an account, add cards, and manage fares with ease.</p>
-
-        <div className="cta-group">
-          <CTAButton to="/auth" text="Sign In" />
-        </div>
+        
       </div>
 
       <div className="features">
@@ -103,4 +99,6 @@ function HomeInner() {
 }
 
 export default memo(HomeInner)
+
+
 

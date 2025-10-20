@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import QRGenerate from '../components/client-dashboard/QRGenerate'
-import { apiFetch } from '../api'
+import { apiFetch } from '../api.js'
 
 export default function ClientDashboard({ token, me }) {
   const [cards, setCards] = useState([])
@@ -115,3 +115,5 @@ export default function ClientDashboard({ token, me }) {
     </div>
   )
 }
+
+
