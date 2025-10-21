@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import ProfileCard from '../Components/ui/ProfileCard'; // Adjust the import path as needed
+import ProfileCard from '../../Components/ui/ProfileCard'; // Adjust the import path as needed
 
 import AOS from 'aos';
 import 'aos/dist/aos.css';

@@ -10,7 +10,7 @@ import { AnimatePresence } from "framer-motion";
 import PropTypes from "prop-types";
 import AuthPage from './Components/auth/Auth';
 import Footer from './Components/ui/Footer';
-import Home from './Pages/static/Homepage';
+import Home from './Pages/static/HomePage';
 import ClientDashboard from './Pages/client/ClientDashboard';
 
 
