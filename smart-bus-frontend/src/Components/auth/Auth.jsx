@@ -5,7 +5,7 @@ import {
   Eye, EyeOff, ArrowRight, UserPlus, LogIn
 } from 'lucide-react';
 import PropTypes from 'prop-types';
-import api from '../utils/apiClient';
+import api from '../../utils/apiClient';
 
 const AnimatedBackground = () => {
   const blobRefs = useRef([]);

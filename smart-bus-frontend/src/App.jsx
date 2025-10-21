@@ -2,16 +2,16 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useState } from 'react';
 import "./index.css";
-import Navbar from "./Components/MainNavbar";
-import About from "./Pages/About";
-import WelcomeScreen from "./Pages/WelcomeScreen";
-import AnimatedBackground from "./Components/Background";
+import Navbar from "./Components/ui/MainNavbar";
+import About from "./Pages/static/About";
+import WelcomeScreen from "./Pages/static/WelcomeScreen";
+import AnimatedBackground from "./Components/ui/Background";
 import { AnimatePresence } from "framer-motion";
 import PropTypes from "prop-types";
-import AuthPage from './Components/Auth';
-import Footer from './Components/Footer';
-import Home from './Pages/Home';
-import ClientDashboard from './pages/ClientDashboard';
+import AuthPage from './Components/auth/Auth';
+import Footer from './Components/ui/Footer';
+import Home from './Pages/static/Homepage';
+import ClientDashboard from './Pages/client/ClientDashboard';
 
 
 const LandingPage = ({ showWelcome, setShowWelcome }) => {
