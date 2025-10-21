@@ -11,6 +11,7 @@ import PropTypes from "prop-types";
 import AuthPage from './Components/Auth';
 import Footer from './Components/Footer';
 import Home from './Pages/Home';
+import ClientDashboard from './pages/ClientDashboard';
 
 
 const LandingPage = ({ showWelcome, setShowWelcome }) => {
@@ -58,6 +59,7 @@ function App() {
           element={<LandingPage showWelcome={showWelcome} setShowWelcome={setShowWelcome} />}
         />
         <Route path="/auth" element={<AuthPage />} />
+        <Route path="/client" element={<ClientDashboard />} />
       </Routes>
     </BrowserRouter>
   );

@@ -263,17 +263,22 @@ const AuthPage = () => {
   
   const handleSignInSubmit = () => {
     // SignInComponent stores minimal profile in localStorage after successful login
-    const userType = localStorage.getItem('userRole') || 'passenger';
-    if (userType === 'passenger') {
-      navigate('/PassengerDashboard');
-    } else if (userType === 'conductor') {
-      navigate('/ConductorDashboard');
-    } else if (userType === 'admin') {
-      navigate('/AdminDashboard');
-    } else {
-      // Fallback
-      navigate('/');
+    const userRole = (localStorage.getItem('userRole') || 'user').toLowerCase();
+    // Redirect normal clients to the client dashboard
+    if (userRole === 'user' || userRole === 'passenger') {
+      navigate('/client');
+      return;
     }
+    if (userRole === 'conductor') {
+      navigate('/ConductorDashboard');
+      return;
+    }
+    if (userRole === 'admin') {
+      navigate('/AdminDashboard');
+      return;
+    }
+    // Fallback
+    navigate('/');
   };
 
 

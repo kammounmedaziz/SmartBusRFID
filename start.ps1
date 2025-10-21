@@ -2,15 +2,18 @@
 
 Write-Host "Starting SmartBus App..." -ForegroundColor Green
 
-# Start backend
+
+# Start backend (opens new console windows so you can see logs)
 Write-Host "Starting backend..." -ForegroundColor Yellow
-Start-Job -ScriptBlock { Set-Location "C:\Users\pc\Desktop\RFID PROJECT\smart-bus-backend"; & "C:\Program Files\nodejs\npm.ps1" start } | Out-Null
+$backendPath = Join-Path $PSScriptRoot 'smart-bus-backend'
+Start-Process -FilePath 'powershell.exe' -ArgumentList '-NoExit','-Command',"Set-Location -Path '$backendPath'; npm run dev" -WorkingDirectory $backendPath | Out-Null
 
 # Start frontend
 Write-Host "Starting frontend..." -ForegroundColor Yellow
-Start-Job -ScriptBlock { Set-Location "C:\Users\pc\Desktop\RFID PROJECT\smart-bus-frontend"; & "C:\Program Files\nodejs\npm.ps1" run dev } | Out-Null
+$frontendPath = Join-Path $PSScriptRoot 'smart-bus-frontend'
+Start-Process -FilePath 'powershell.exe' -ArgumentList '-NoExit','-Command',"Set-Location -Path '$frontendPath'; npm run dev" -WorkingDirectory $frontendPath | Out-Null
 
-Write-Host "Both services started successfully!" -ForegroundColor Green
-Write-Host "Backend: http://localhost:5000" -ForegroundColor Cyan
-Write-Host "Frontend: http://localhost:5173" -ForegroundColor Cyan
-Write-Host "Press Ctrl+C in the terminals to stop." -ForegroundColor Magenta
+Write-Host "Spawned backend and frontend processes in separate PowerShell windows." -ForegroundColor Green
+Write-Host "Backend: http://localhost:5000 (if using default)" -ForegroundColor Cyan
+Write-Host "Frontend: http://localhost:5173 (Vite default)" -ForegroundColor Cyan
+Write-Host "Close the spawned windows to stop the servers." -ForegroundColor Magenta

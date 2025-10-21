@@ -220,4 +220,57 @@ export const payWithMyCard = async (req, res) => {
   }
 };
 
+// User-scoped recharge (add funds to owned card)
+export const rechargeMyCard = async (req, res) => {
+  try {
+    const { card_id, amount } = req.body;
+    if (!card_id || amount == null) return res.status(400).json({ error: 'card_id and amount required' });
+    const conn = await db.getConnection();
+    try {
+      await conn.beginTransaction();
+      // ensure ownership and lock
+      await ensureCardOwnership(card_id, req.user.id, conn);
+      const [rows] = await conn.query('SELECT * FROM cards WHERE id = ? FOR UPDATE', [card_id]);
+      if (rows.length === 0) {
+        await conn.rollback(); conn.release();
+        return res.status(404).json({ error: 'Card not found' });
+      }
+      const card = rows[0];
+      const newBalance = parseFloat(card.balance) + parseFloat(amount);
+      await conn.query('UPDATE cards SET balance = ? WHERE id = ?', [newBalance, card_id]);
+      await conn.query('INSERT INTO transactions (card_id, amount, type) VALUES (?, ?, ?)', [card.id, amount, 'recharge']);
+      await conn.commit(); conn.release();
+      res.json({ message: 'Card recharged', new_balance: newBalance });
+    } catch (err) {
+      await conn.rollback(); conn.release();
+      throw err;
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+// Delete a user's own card
+export const deleteMyCard = async (req, res) => {
+  try {
+    const cardId = parseInt(req.params.id, 10);
+    if (!cardId) return res.status(400).json({ error: 'Invalid card id' });
+    const conn = await db.getConnection();
+    try {
+      await conn.beginTransaction();
+      await ensureCardOwnership(cardId, req.user.id, conn);
+      await conn.query('DELETE FROM cards WHERE id = ?', [cardId]);
+      await conn.commit(); conn.release();
+      res.json({ message: 'Card deleted' });
+    } catch (err) {
+      await conn.rollback(); conn.release();
+      throw err;
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
 

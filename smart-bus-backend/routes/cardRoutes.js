@@ -1,7 +1,7 @@
 import express from "express";
 import Joi from 'joi';
 import { validateBody } from '../middleware/validate.js';
-import { getCards, rechargeCard, payFare, getTransactions, getMyCards, payWithMyCard, getMyTransactions } from "../controllers/cardController.js";
+import { getCards, rechargeCard, payFare, getTransactions, getMyCards, payWithMyCard, getMyTransactions, rechargeMyCard, deleteMyCard } from "../controllers/cardController.js";
 import { createCard, createCardForMe } from "../controllers/cardController.js";
 import { requireAuth } from "../middleware/auth.js";
 
@@ -25,6 +25,10 @@ router.post('/me', requireAuth(['user']), createCardForMe);
 router.get('/me/cards', requireAuth(['user']), getMyCards);
 // user-scoped: pay using one of the user's cards (body: { card_id, amount })
 router.post('/me/pay', requireAuth(['user']), payWithMyCard);
+// user-scoped: recharge one of the user's cards
+router.post('/me/recharge', requireAuth(['user']), validateBody(Joi.object({ card_id: Joi.number().required(), amount: Joi.number().positive().required() })), rechargeMyCard);
+// user-scoped: delete a card by id
+router.delete('/me/:id', requireAuth(['user']), deleteMyCard);
 // user-scoped: transactions
 router.get('/me/transactions', requireAuth(['user']), getMyTransactions);
 

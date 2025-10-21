@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Cpu,  Bus, Users,  Sparkles } from 'lucide-react';
+import {Sparkles } from 'lucide-react';
 
 const AnimatedBackground = () => {
   const blobRefs = useRef([])
@@ -129,32 +129,13 @@ const Home = () => {
           }
         `}</style>
 
-        <div className="mt-14 grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Stat icon={Bus} label="Active Buses" value="42" />
-          <Stat icon={Users} label="Daily Riders" value="3.4k" />
-          <Stat icon={Cpu} label="Validations/min" value="120+" />
-        </div>
+        
       </div>
     </div>
   );
 };
 
-const Feature = ({ icon: Icon, title, text }) => (
-  <div className="backdrop-blur-lg bg-gray-900/40 rounded-2xl p-5 shadow-xl border border-gray-700/60 hover:shadow-2xl transition-all duration-300 hover:scale-[1.02]">
-    <div className="flex items-center gap-3 mb-2">
-  <Icon className="w-6 h-6 text-cyan-400" />
-      <h3 className="text-lg font-semibold text-gray-100">{title}</h3>
-    </div>
-    <p className="text-gray-400 text-sm">{text}</p>
-  </div>
-);
 
-const Stat = ({ icon: Icon, label, value }) => (
-  <div className="backdrop-blur-lg bg-gray-900/40 rounded-2xl p-6 shadow-xl border border-gray-700/60 text-center">
-  <Icon className="w-7 h-7 text-cyan-400 mx-auto mb-2" />
-  <div className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-gray-300">{value}</div>
-    <div className="text-gray-400 text-sm">{label}</div>
-  </div>
-);
+
 
 export default Home;

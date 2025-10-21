@@ -51,6 +51,14 @@ export async function getMyTransactions(token) {
   return request('/api/cards/me/transactions', { method: 'GET', token });
 }
 
+export async function rechargeMyCard(token, { card_id, amount }) {
+  return request('/api/cards/me/recharge', { method: 'POST', token, body: { card_id, amount } });
+}
+
+export async function deleteMyCard(token, id) {
+  return request(`/api/cards/me/${id}`, { method: 'DELETE', token });
+}
+
 // Admin/operator actions
 export async function rechargeCard(token, { uid, amount }) {
   return request('/api/cards/recharge', { method: 'POST', token, body: { uid, amount } });
@@ -80,6 +88,8 @@ export default {
   createCardForMe,
   payWithMyCard,
   getMyTransactions,
+  rechargeMyCard,
+  deleteMyCard,
   rechargeCard,
   payFare,
   createCard,
