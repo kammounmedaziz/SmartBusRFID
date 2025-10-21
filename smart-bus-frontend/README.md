@@ -1,55 +1,13 @@
-# Smart Bus Frontend
+## Development
 
-Minimal React + Vite frontend for Smart Bus admin tasks.
+### Install Dependencies
 
-## Quick start
-
-1. Install deps
-
-```powershell
-cd smart-bus-frontend
-npm install
+```sh
+npm ci --legacy-peer-deps
 ```
 
-1. Create `.env` from `.env.example` and set your backend API URL
+### Start Development Server
 
-```env
-VITE_API_URL=http://localhost:5000
-```
-
-1. Run dev server
-
-```powershell
+```sh
 npm run dev
-```
-
-Open the URL shown by Vite (usually http://localhost:5173).
-
-## Features
-- Login (POST /auth/login)
-- View cards (GET /api/cards)
-- Create card (POST /api/cards)
-- Recharge (POST /api/cards/recharge)
-- Pay (POST /api/cards/pay)
-- View transactions (GET /api/cards/transactions)
-
-## Notes
-- This frontend expects the backend to support CORS from the dev origin. If you see CORS errors, add the `cors` middleware to the backend Express app:
-
-```js
-import cors from 'cors'
-app.use(cors())
-```
-
-- Tokens are stored in `localStorage` under `sb_token`.
-
-## Line endings (Windows users)
-
-If you see Git warnings about LF ↔ CRLF, run these from the repository root to enforce LF in the repo:
-
-```powershell
-git add .gitattributes
-git commit -m "Add .gitattributes" || true
-git add --renormalize .
-git commit -m "Normalize line endings"
 ```

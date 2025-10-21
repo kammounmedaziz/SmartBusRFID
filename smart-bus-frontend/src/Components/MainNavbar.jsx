@@ -1,19 +1,53 @@
-import React, { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Menu, X } from "lucide-react";
 import { useLocation } from "react-router-dom";
 
 const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
+    const [scrolled, setScrolled] = useState(false);
     const [activeSection, setActiveSection] = useState("Home");
     const location = useLocation();
     
     
     const navItems = useMemo(() => [
-
+        { href: "#Home", label: "Home" },
+        { href: "#About", label: "About" },
         { href: "/auth", label: "Sign In", isAuth: true },
     ], []);
 
-    // Removed scroll listener (window.scrollY) to keep navbar appearance stable across pages
+    useEffect(() => {
+        const handleScroll = () => {
+            setScrolled(window.scrollY > 20);
+            
+            const sectionPositions = navItems
+            .filter(item => item.href.startsWith('#')) // Only hash links
+            .map(item => {
+                const section = document.querySelector(item.href);
+                if (section) {
+                return {
+                    id: item.href.slice(1),
+                    top: section.offsetTop,
+                    bottom: section.offsetTop + section.offsetHeight
+                };
+                }
+                return null;
+            }).filter(Boolean);
+
+            // Find which section is currently in view
+            const scrollPosition = window.scrollY + 100; // Adding offset for better detection
+            const currentSection = sectionPositions.find(section => 
+                scrollPosition >= section.top && scrollPosition < section.bottom
+            );
+
+            if (currentSection) {
+                setActiveSection(currentSection.id);
+            }
+        };
+
+        window.addEventListener("scroll", handleScroll);
+        handleScroll(); // Call once to set initial state
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, [navItems]);
 
     useEffect(() => {
         if (isOpen) {
@@ -53,7 +87,13 @@ const Navbar = () => {
     };
 
     return (
-        <nav className={`fixed w-full top-0 z-50 bg-[#030014]/80 backdrop-blur-xl`}>
+        <nav className={`fixed w-full top-0 z-50 transition-all duration-500 ${
+            isOpen
+                ? "bg-[#030014] opacity-100"
+                : scrolled
+                ? "bg-[#030014]/50 backdrop-blur-xl"
+                : "bg-transparent"
+        }`}>
             <div className="mx-auto px-4 sm:px-6 lg:px-[10%]">
                 <div className="flex items-center justify-between h-16">
                     {/* Logo with image */}
@@ -64,8 +104,8 @@ const Navbar = () => {
                             className="flex items-center"
                         >
                             <img 
-                                src="src\assets\media\side logo.png" 
-                                alt="Hikma Learn Logo"
+                                src="src/assets/media/side logo.png" 
+                                alt="Smart Bus RFID Logo"
                                 className="h-10 w-auto"
                                 loading="lazy"
                                 />
@@ -85,14 +125,14 @@ const Navbar = () => {
                                     <span
                                         className={`relative z-10 transition-colors duration-300 ${
                                             activeSection === item.href.slice(1)
-                                                ? "bg-gradient-to-r from-[#2e3c79] to-[#f75555] bg-clip-text text-transparent font-semibold"
-                                                : "text-[#e2d3fd] group-hover:text-white"
+                                                ? "bg-gradient-to-r from-[#064e59] to-[#06b6d4] bg-clip-text text-transparent font-semibold"
+                                                : "text-[#cffafe] group-hover:text-white"
                                         }`}
                                     >
                                         {item.label}
                                     </span>
                                     <span
-                                        className={`absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-[#6366f1] to-[#a855f7] transform origin-left transition-transform duration-300 ${
+                                        className={`absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-[#06b6d4] to-[#0891b2] transform origin-left transition-transform duration-300 ${
                                             activeSection === item.href.slice(1)
                                                 ? "scale-x-100"
                                                 : "scale-x-0 group-hover:scale-x-100"
@@ -107,7 +147,7 @@ const Navbar = () => {
                     <div className="md:hidden">
                         <button
                             onClick={() => setIsOpen(!isOpen)}
-                            className={`relative p-2 text-[#e2d3fd] hover:text-white transition-transform duration-300 ease-in-out transform ${
+                            className={`relative p-2 text-[#cffafe] hover:text-white transition-transform duration-300 ease-in-out transform ${
                                 isOpen ? "rotate-90 scale-125" : "rotate-0 scale-100"
                             }`}
                         >
@@ -135,8 +175,8 @@ const Navbar = () => {
                                 onClick={(e) => scrollToSection(e, item.href, item.isAuth)}
                                 className={`block px-4 py-3 text-lg font-medium ${
                                     activeSection === item.href.slice(1)
-                                        ? "bg-gradient-to-r from-[#4648d1] to-[#f75555] bg-clip-text text-transparent font-semibold"
-                                        : "text-[#e2d3fd] hover:text-white"
+                                        ? "bg-gradient-to-r from-[#064e59] to-[#06b6d4] bg-clip-text text-transparent font-semibold"
+                                            : "text-[#cffafe] hover:text-white"
                                 }`}
                             >
                                 {item.label}

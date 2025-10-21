@@ -108,17 +108,14 @@ body {
  }
 
   
-   @media (prefers-color-scheme: dark) {
+/*   @media (prefers-color-scheme: dark) {
 	::-webkit-scrollbar-track {
 	  background: rgba(3, 0, 20, 0.6);
 	}
-  } 
+  } */
 
-.animated-bg {
-  pointer-events: none;
-  z-index: 0;
-}
 
+/* 
   .container {
 	width: 100%;
 	height: 100%;
@@ -187,4 +184,4 @@ body {
 	-ms-user-select: none;
 	user-select: none;
 	cursor: default;
-  } 
+  } */

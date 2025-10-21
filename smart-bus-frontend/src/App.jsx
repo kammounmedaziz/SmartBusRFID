@@ -1,91 +1,66 @@
-import React, { useState, useEffect } from 'react'
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
-import Nav from './components/ui/Nav'
-import Sidebar from './components/ui/Sidebar'
-import Account from './pages/Account'
-import Home from './pages/Home'
-import AuthPage from './pages/AuthPage'
-import NotFound from './pages/NotFound'
-import Users from './pages/Users'
-import Reports from './pages/Reports'
-import ClientDashboard from './pages/ClientDashboard'
-import Dashboard from './pages/Dashboard'
-import { apiFetch } from './api'
+import 'bootstrap/dist/css/bootstrap.min.css';
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { useState } from 'react';
+import "./index.css";
+import Navbar from "./Components/MainNavbar";
+import About from "./Pages/About";
+import WelcomeScreen from "./Pages/WelcomeScreen";
+import AnimatedBackground from "./Components/Background";
+import { AnimatePresence } from "framer-motion";
+import PropTypes from "prop-types";
+import AuthPage from './Components/Auth';
+import Footer from './Components/Footer';
+import Home from './Pages/Home';
 
-function AppContent({ token, me, handleLogin, handleLogout }) {
-  const location = useLocation()
-  const showNav = location.pathname !== '/auth'
 
+const LandingPage = ({ showWelcome, setShowWelcome }) => {
   return (
     <>
-      {/* If a normal client is signed in, show the sidebar layout */}
-      {me?.role === 'user' ? (
-        <div className="app-with-sidebar">
-          <Sidebar onLogout={handleLogout} />
-          <main className="content">
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/auth" element={<AuthPage onLogin={handleLogin} />} />
-              <Route path="/client-dashboard" element={token ? <ClientDashboard token={token} me={me} /> : <Navigate to="/auth" replace />} />
-              <Route path="/account" element={token ? <Account token={token} me={me} /> : <Navigate to="/auth" replace />} />
-              <Route path="/dashboard" element={token ? <Dashboard token={token} me={me} /> : <Navigate to="/auth" replace />} />
-              <Route path="/users" element={token && me?.role === 'admin' ? <Users token={token} /> : <Navigate to="/auth" replace />} />
-              <Route path="/reports" element={token && me?.role === 'admin' ? <Reports token={token} /> : <Navigate to="/auth" replace />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </main>
+      <AnimatePresence mode="wait">
+        {showWelcome && (
+          <WelcomeScreen onLoadingComplete={() => setShowWelcome(false)} />
+        )}
+      </AnimatePresence>
+
+      {!showWelcome && (
+        <div className="relative">
+          {/* Background with lower z-index */}
+          <div className="absolute inset-0 z-0">
+            <AnimatedBackground />
+          </div>
+          
+
+          <div className="relative z-10">
+            <Navbar />
+            <Home />
+            <About />
+            <Footer />
+          </div>
         </div>
-      ) : (
-        <>
-          {showNav && <Nav token={token} me={me} onLogout={handleLogout} />}
-          <main>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/auth" element={<AuthPage onLogin={handleLogin} />} />
-              <Route path="/client-dashboard" element={token ? <ClientDashboard token={token} me={me} /> : <Navigate to="/auth" replace />} />
-              <Route path="/account" element={token ? <Account token={token} me={me} /> : <Navigate to="/auth" replace />} />
-              <Route path="/dashboard" element={token ? <Dashboard token={token} me={me} /> : <Navigate to="/auth" replace />} />
-              <Route path="/users" element={token && me?.role === 'admin' ? <Users token={token} /> : <Navigate to="/auth" replace />} />
-              <Route path="/reports" element={token && me?.role === 'admin' ? <Reports token={token} /> : <Navigate to="/auth" replace />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </main>
-        </>
       )}
     </>
-  )
-}
+  );
+};
 
-export default function App() {
-  const [token, setToken] = useState(null)
-  const [me, setMe] = useState(null)
+LandingPage.propTypes = {
+  showWelcome: PropTypes.bool.isRequired,
+  setShowWelcome: PropTypes.func.isRequired,
+};
 
-  useEffect(() => {
-    const saved = localStorage.getItem('sb_token')
-    if (saved) setToken(saved)
-  }, [])
-
-  useEffect(() => {
-    if (!token) return setMe(null)
-    // fetch /auth/me using apiFetch which respects VITE_API_URL
-    apiFetch('/auth/me', token).then(data => setMe(data)).catch(() => setMe(null))
-  }, [token])
-
-  function handleLogin(t) {
-    localStorage.setItem('sb_token', t)
-    setToken(t)
-  }
-
-  function handleLogout() {
-    localStorage.removeItem('sb_token')
-    setToken(null)
-  }
+function App() {
+  const [showWelcome, setShowWelcome] = useState(true);
 
   return (
     <BrowserRouter>
-      <AppContent token={token} me={me} handleLogin={handleLogin} handleLogout={handleLogout} />
+      <Routes>
+        <Route
+          path="/"
+          element={<LandingPage showWelcome={showWelcome} setShowWelcome={setShowWelcome} />}
+        />
+        <Route path="/auth" element={<AuthPage />} />
+      </Routes>
     </BrowserRouter>
-  )
+  );
 }
 
-
+export default App;
