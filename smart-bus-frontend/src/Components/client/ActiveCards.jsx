@@ -12,10 +12,16 @@ const ActiveCards = () => {
     setError(null);
     try {
       const token = localStorage.getItem('token');
+      if (!token) {
+        setError('Not authenticated. Please log in.');
+        setLoading(false);
+        return;
+      }
       const res = await api.getMyCards(token);
       setCards(res?.data || []);
     } catch (err) {
-      setError(err.message || 'Failed to load cards');
+      console.error('Error fetching cards:', err);
+      setError(err.message || 'Failed to load cards. Please check if the backend server is running.');
     } finally {
       setLoading(false);
     }

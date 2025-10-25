@@ -5,6 +5,8 @@ import morgan from "morgan";
 import cardRoutes from "./routes/cardRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
+import controllerRoutes from "./routes/controllerRoutes.js";
+import manualPaymentRoutes from "./routes/manualPaymentRoutes.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 
 dotenv.config();
@@ -29,6 +31,12 @@ app.use("/auth", authRoutes);
 
 // Admin routes (users, reports)
 app.use('/api', adminRoutes);
+
+// Controller routes (ticket validation, logs)
+app.use('/api/controller', controllerRoutes);
+
+// Manual payment routes
+app.use('/api/manual-payments', manualPaymentRoutes);
 
 // Error handler (last)
 app.use(errorHandler);

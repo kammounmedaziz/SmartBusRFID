@@ -20,11 +20,11 @@ export const getAll = async () => {
 
 export const getByUserId = async (user_id) => {
   const [rows] = await db.query(
-    `SELECT t.id, t.card_id, t.amount, t.type, t.created_at as timestamp, c.uid as card_uid
+    `SELECT t.id, t.card_id, t.amount, t.type, t.timestamp, c.uid as card_uid
      FROM transactions t
      JOIN cards c ON c.id = t.card_id
      WHERE c.user_id = ?
-     ORDER BY t.created_at DESC`,
+     ORDER BY t.timestamp DESC`,
     [user_id]
   );
   return rows;

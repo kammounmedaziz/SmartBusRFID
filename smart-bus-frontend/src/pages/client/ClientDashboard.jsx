@@ -2,13 +2,15 @@ import { useState } from 'react';
 import ActiveCards from '../../components/client/ActiveCards';
 import TransactionsList from '../../components/client/TransactionsList';
 import CardManagement from '../../components/client/CardManagement';
-import { LogOut, CreditCard, List, Home, Menu } from 'lucide-react';
+import ManualPayment from '../../components/client/ManualPayment';
+import { LogOut, CreditCard, List, Home, Menu, DollarSign } from 'lucide-react';
 
 const ClientSidebar = ({ current, setCurrent, isExpanded, toggleExpanded }) => {
   const items = [
     { id: 'main', label: 'Main Dashboard', icon: Home },
     { id: 'cards', label: 'Card Management', icon: CreditCard },
     { id: 'transactions', label: 'Transactions', icon: List },
+    { id: 'manual-payment', label: 'Manual Payment', icon: DollarSign },
     { id: 'logout', label: 'Log out', icon: LogOut },
   ];
   const mainItems = items.filter(it => it.id !== 'logout');
@@ -73,6 +75,8 @@ const ClientDashboard = () => {
         return <CardManagement />;
       case 'transactions':
         return <TransactionsList />;
+      case 'manual-payment':
+        return <ManualPayment />;
       case 'logout':
         // clear token and redirect to home
         localStorage.removeItem('token');

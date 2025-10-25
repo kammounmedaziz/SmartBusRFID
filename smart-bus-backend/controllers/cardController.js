@@ -175,8 +175,8 @@ export const getMyTransactions = async (req, res) => {
     const transactions = await Transaction.getByUserId(req.user.id);
     res.json({ data: transactions });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Server error' });
+    console.error('getMyTransactions error:', err);
+    res.status(500).json({ error: err.message || 'Failed to fetch transactions' });
   }
 };
 
@@ -187,8 +187,8 @@ export const getMyCards = async (req, res) => {
     const cards = await Card.findByUserId(req.user.id);
     res.json({ data: cards });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Server error' });
+    console.error('getMyCards error:', err);
+    res.status(500).json({ error: err.message || 'Failed to fetch cards' });
   }
 };
 

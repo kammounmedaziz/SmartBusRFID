@@ -118,6 +118,12 @@ const Home = () => {
             Learn more
           </a>
         </div>
+         <div className="mt-16 flex items-center justify-center gap-8 text-gray-500">
+          <div className="w-12 h-px bg-gradient-to-r from-transparent to-cyan-500" />
+          <div className="w-2 h-2 bg-cyan-500 rounded-full" />
+          <div className="w-12 h-px bg-gradient-to-l from-transparent to-cyan-500" />
+        </div>
+        
         
         <style>{`
           @keyframes spin-slow {

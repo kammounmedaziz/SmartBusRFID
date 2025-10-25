@@ -12,6 +12,9 @@ import AuthPage from './Components/auth/Auth';
 import Footer from './Components/ui/Footer';
 import Home from './Pages/static/HomePage';
 import ClientDashboard from './Pages/client/ClientDashboard';
+import AdminDashboard from './Pages/admin/AdminDashboard';
+import ControllerDashboard from './Pages/controller/ControllerDashboard';
+import OperatorDashboard from './Pages/operator/OperatorDashboard';
 
 
 const LandingPage = ({ showWelcome, setShowWelcome }) => {
@@ -60,6 +63,10 @@ function App() {
         />
         <Route path="/auth" element={<AuthPage />} />
         <Route path="/client" element={<ClientDashboard />} />
+        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/AdminDashboard" element={<AdminDashboard />} />
+        <Route path="/controller" element={<ControllerDashboard />} />
+        <Route path="/operator" element={<OperatorDashboard />} />
       </Routes>
     </BrowserRouter>
   );

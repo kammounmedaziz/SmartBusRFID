@@ -277,6 +277,14 @@ const AuthPage = () => {
       navigate('/AdminDashboard');
       return;
     }
+    if (userRole === 'operator') {
+      navigate('/operator');
+      return;
+    }
+    if (userRole === 'controller') {
+      navigate('/controller');
+      return;
+    }
     // Fallback
     navigate('/');
   };
