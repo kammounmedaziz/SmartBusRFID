@@ -54,3 +54,9 @@ temp/
 
 # Optional: local database files
 *.sqlite
+
+# Database seeding script
+seed.js
+migrate.js
+
+
