@@ -1,9 +1,9 @@
 import db from "../config/db.js";
 
-export const create = async ({ user_id, amount, payment_method, notes }) => {
+export const create = async ({ user_id, amount, payment_method, card_id, operator_name, notes }) => {
   const [result] = await db.query(
-    "INSERT INTO manual_payments (user_id, amount, payment_method, notes) VALUES (?, ?, ?, ?)",
-    [user_id, amount, payment_method, notes]
+    "INSERT INTO manual_payments (user_id, amount, payment_method, card_id, operator_name, notes) VALUES (?, ?, ?, ?, ?, ?)",
+    [user_id, amount, payment_method, card_id, operator_name, notes]
   );
   return result.insertId;
 };
@@ -22,9 +22,12 @@ export const getAll = async () => {
 
 export const getByUserId = async (user_id) => {
   const [rows] = await db.query(
-    `SELECT mp.*, v.name as verified_by_name
+    `SELECT mp.*, 
+            v.name as verified_by_name,
+            c.uid as card_uid
      FROM manual_payments mp
      LEFT JOIN users v ON v.id = mp.verified_by
+     LEFT JOIN cards c ON c.id = mp.card_id
      WHERE mp.user_id = ?
      ORDER BY mp.payment_time DESC`,
     [user_id]

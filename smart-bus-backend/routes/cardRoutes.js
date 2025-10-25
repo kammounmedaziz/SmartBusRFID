@@ -23,6 +23,7 @@ router.post('/me', requireAuth(['user']), createCardForMe);
 
 // user-scoped: get cards for the authenticated user
 router.get('/me/cards', requireAuth(['user']), getMyCards);
+router.get('/my-cards', requireAuth(['user']), getMyCards);
 // user-scoped: pay using one of the user's cards (body: { card_id, amount })
 router.post('/me/pay', requireAuth(['user']), payWithMyCard);
 // user-scoped: recharge one of the user's cards
