@@ -29,6 +29,10 @@ const ActiveCards = () => {
 
   useEffect(() => {
     fetchCards();
+    // Listen for card updates
+    const handler = () => fetchCards();
+    window.addEventListener('cards:updated', handler);
+    return () => window.removeEventListener('cards:updated', handler);
   }, []);
 
   if (loading) return <div>Loading cards...</div>;

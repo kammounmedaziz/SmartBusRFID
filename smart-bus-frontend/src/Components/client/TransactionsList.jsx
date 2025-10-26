@@ -38,22 +38,22 @@ const TransactionsList = () => {
 
   return (
     <div className="mt-4">
-      <h2 className="text-lg font-semibold mb-2">Recent Transactions</h2>
+      <h2 className="text-lg font-semibold mb-2 text-white">Recent Transactions</h2>
       {txs.length === 0 ? (
-        <div className="text-gray-400">No recent transactions.</div>
+        <div className="text-gray-300">No recent transactions.</div>
       ) : (
         <div className="space-y-2">
           {txs.map(t => (
-            <div key={t.id} className="p-3 bg-gray-800 rounded border border-gray-700">
+            <div key={t.id} className="p-3 backdrop-blur-lg bg-white/10 border border-white/20 rounded-xl shadow-lg hover:bg-white/15 transition-all duration-300">
               <div className="flex justify-between">
                 <div>
-                  <div className="text-sm text-gray-400">{new Date(t.timestamp).toLocaleString()}</div>
-                  <div className="font-medium">{t.type || 'transaction'} — Card: {t.card_uid || t.uid || 'N/A'}</div>
+                  <div className="text-sm text-gray-300">{new Date(t.timestamp).toLocaleString()}</div>
+                  <div className="font-medium text-white">{t.type || 'transaction'} — Card: {t.card_uid || t.uid || 'N/A'}</div>
                 </div>
                 <div className="text-right">
-                  <div className="text-sm text-gray-400">Amount</div>
-                  <div className={`font-semibold ${t.type === 'recharge' ? 'text-green-400' : 'text-red-400'}`}>
-                    {t.type === 'recharge' ? '+' : '-'}{t.amount?.toFixed?.(2) ?? t.amount}
+                  <div className="text-sm text-gray-300">Amount</div>
+                  <div className={`font-semibold text-lg ${t.type === 'recharge' ? 'text-green-300' : 'text-red-300'}`}>
+                    {t.type === 'recharge' ? '+' : '-'}{t.amount?.toFixed?.(2) ?? t.amount} T-Pay
                   </div>
                 </div>
               </div>

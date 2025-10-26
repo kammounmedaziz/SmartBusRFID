@@ -36,7 +36,7 @@ export async function me(token) {
 
 // Cards
 export async function getMyCards(token) {
-  return request('/api/cards/me/cards', { method: 'GET', token });
+  return request('/api/cards/my-cards', { method: 'GET', token });
 }
 
 export async function createCardForMe(token, { uid, balance = 0 }) {

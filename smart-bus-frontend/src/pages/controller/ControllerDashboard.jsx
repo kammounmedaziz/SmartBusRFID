@@ -20,7 +20,7 @@ const ControllerSidebar = ({ current, setCurrent, isExpanded, toggleExpanded }) 
   const iconSize = isExpanded ? 'w-6 h-6' : 'w-8 h-8';
 
   return (
-    <div className={`backdrop-blur-md bg-black/20 border-r border-white/10 ${isExpanded ? 'p-4 w-64' : 'p-2 w-24'} h-screen flex flex-col overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]`}>
+    <div className={`fixed left-0 top-0 backdrop-blur-md bg-black/20 border-r border-white/10 ${isExpanded ? 'p-4 w-64' : 'p-2 w-24'} h-screen flex flex-col overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] z-50`}>
       <div className={`mb-6 flex items-center ${isExpanded ? 'justify-between' : 'justify-center'} transition-all duration-500`}>
         <div className={isExpanded ? '' : 'hidden'}>
           <h2 className="text-xl font-bold text-white">Controller Hub</h2>
@@ -112,9 +112,11 @@ const ControllerDashboard = () => {
           isExpanded={isSidebarExpanded} 
           toggleExpanded={() => setIsSidebarExpanded(!isSidebarExpanded)} 
         />
-        <main className="flex-1 p-6">
-          <div className="backdrop-blur-lg bg-gray-900/30 rounded-2xl border border-gray-700 p-6">
-            {renderContent()}
+        <main className={`flex-1 min-h-screen overflow-y-auto ${isSidebarExpanded ? 'ml-64' : 'ml-24'} transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]`}>
+          <div className="p-6">
+            <div className="backdrop-blur-lg bg-gray-900/30 rounded-2xl border border-gray-700 p-6">
+              {renderContent()}
+            </div>
           </div>
         </main>
       </div>

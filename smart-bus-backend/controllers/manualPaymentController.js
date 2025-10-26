@@ -58,8 +58,8 @@ export const createManualPayment = async (req, res) => {
 
         // Create transaction record
         await connection.query(
-          'INSERT INTO transactions (card_id, amount, type, status) VALUES (?, ?, ?, ?)',
-          [card_id, amount, 'payment', 'completed']
+          'INSERT INTO transactions (card_id, amount, type) VALUES (?, ?, ?)',
+          [card_id, amount, 'payment']
         );
 
         // Create manual payment record with verified status

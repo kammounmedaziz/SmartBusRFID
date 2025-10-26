@@ -115,7 +115,7 @@ const ControllerActivityMonitor = () => {
                       {validation.user_name || 'N/A'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {validation.fare_amount} DZD
+                      {validation.fare_amount} T-Pay
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {getStatusBadge(validation.status)}

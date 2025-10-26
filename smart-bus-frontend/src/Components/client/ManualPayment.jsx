@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
-import apiClient from '../../utils/apiClient';
+import { Wallet, CreditCard, AlertCircle, CheckCircle, Clock } from 'lucide-react';
 
 const ManualPayment = () => {
   const [amount, setAmount] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('cash');
-  const [referenceNumber, setReferenceNumber] = useState('');
+  const [selectedCard, setSelectedCard] = useState('');
+  const [operatorName, setOperatorName] = useState('');
+  const [userCards, setUserCards] = useState([]);
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -13,7 +15,30 @@ const ManualPayment = () => {
 
   useEffect(() => {
     fetchPayments();
+    fetchUserCards();
   }, []);
+
+  const fetchUserCards = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:5000/api/cards/my-cards', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch cards');
+      }
+      
+      const result = await response.json();
+      const cards = result.data || result || [];
+      setUserCards(Array.isArray(cards) ? cards : []);
+    } catch (err) {
+      console.error('Error fetching cards:', err);
+      setError('Failed to load your cards');
+    }
+  };
 
   const fetchPayments = async () => {
     try {
@@ -23,8 +48,9 @@ const ManualPayment = () => {
         }
       });
       if (!response.ok) throw new Error('Failed to fetch payments');
-      const data = await response.json();
-      setPayments(data);
+      const result = await response.json();
+      const payments = result.data || result || [];
+      setPayments(Array.isArray(payments) ? payments : []);
     } catch (err) {
       console.error('Error fetching payments:', err);
     }
@@ -36,19 +62,43 @@ const ManualPayment = () => {
     setError('');
     setSuccess('');
 
+    // Validation
+    if (paymentMethod === 'card' && !selectedCard) {
+      setError('Please select a card for payment');
+      setLoading(false);
+      return;
+    }
+
+    if (paymentMethod === 'cash' && !operatorName.trim()) {
+      setError('Please enter the operator name who handled your payment');
+      setLoading(false);
+      return;
+    }
+
     try {
+      const payload = {
+        amount: parseFloat(amount),
+        payment_method: paymentMethod,
+        notes: notes || null
+      };
+
+      // Add card_id if payment method is card
+      if (paymentMethod === 'card') {
+        payload.card_id = parseInt(selectedCard);
+      }
+
+      // Add operator_name if payment method is cash
+      if (paymentMethod === 'cash') {
+        payload.operator_name = operatorName.trim();
+      }
+
       const response = await fetch('http://localhost:5000/api/manual-payments', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
-        body: JSON.stringify({
-          amount: parseFloat(amount),
-          payment_method: paymentMethod,
-          reference_number: referenceNumber || null,
-          notes: notes || null
-        })
+        body: JSON.stringify(payload)
       });
 
       if (!response.ok) {
@@ -56,11 +106,20 @@ const ManualPayment = () => {
         throw new Error(errorData.error || 'Failed to create payment request');
       }
 
-      setSuccess('Payment request submitted successfully! Please wait for admin verification.');
+      if (paymentMethod === 'cash') {
+        setSuccess('Cash payment request submitted! An operator will verify your payment shortly.');
+      } else {
+        setSuccess('Card payment completed successfully!');
+        // Trigger event to refresh cards and transactions
+        window.dispatchEvent(new Event('cards:updated'));
+      }
+      
       setAmount('');
-      setReferenceNumber('');
+      setSelectedCard('');
+      setOperatorName('');
       setNotes('');
       fetchPayments();
+      fetchUserCards(); // Refresh cards to show updated balance
     } catch (err) {
       setError(err.message);
     } finally {
@@ -70,12 +129,12 @@ const ManualPayment = () => {
 
   const getStatusBadge = (status) => {
     const statusColors = {
-      pending: 'bg-yellow-100 text-yellow-800',
-      verified: 'bg-green-100 text-green-800',
-      rejected: 'bg-red-100 text-red-800'
+      pending: 'backdrop-blur-md bg-yellow-500/30 text-yellow-100 border border-yellow-400/50',
+      verified: 'backdrop-blur-md bg-green-500/30 text-green-100 border border-green-400/50',
+      rejected: 'backdrop-blur-md bg-red-500/30 text-red-100 border border-red-400/50'
     };
     return (
-      <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[status]}`}>
+      <span className={`px-3 py-1 rounded-full text-xs font-medium ${statusColors[status]}`}>
         {status.toUpperCase()}
       </span>
     );
@@ -84,28 +143,36 @@ const ManualPayment = () => {
   return (
     <div className="space-y-6">
       {/* Payment Form */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">Manual Payment Request</h2>
-        <p className="text-gray-600 mb-6">
-          Submit a manual payment request if your card payment failed. An admin will verify your payment.
-        </p>
+      <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl shadow-2xl p-6">
+        <h2 className="text-2xl font-bold text-white mb-2">Manual Payment Request</h2>
+        <div className="mb-6 p-4 backdrop-blur-md bg-blue-500/20 border border-blue-400/30 rounded-lg">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-blue-200 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-blue-100 text-sm font-medium mb-1">Currency Information</p>
+              <p className="text-blue-200 text-xs">1 DT (Dinar) = 1 T-Pay coin</p>
+            </div>
+          </div>
+        </div>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-            {error}
+          <div className="mb-4 p-3 backdrop-blur-md bg-red-500/20 border border-red-400/30 text-red-100 rounded-lg flex items-start gap-2">
+            <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+            <span>{error}</span>
           </div>
         )}
 
         {success && (
-          <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">
-            {success}
+          <div className="mb-4 p-3 backdrop-blur-md bg-green-500/20 border border-green-400/30 text-green-100 rounded-lg flex items-start gap-2">
+            <CheckCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+            <span>{success}</span>
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-gray-700 font-medium mb-2">
-              Amount (DZD) <span className="text-red-500">*</span>
+            <label className="block text-gray-200 font-medium mb-2">
+              Amount (T-Pay) <span className="text-red-300">*</span>
             </label>
             <input
               type="number"
@@ -114,49 +181,131 @@ const ManualPayment = () => {
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Enter amount"
+              className="w-full px-4 py-2 backdrop-blur-md bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-cyan-400"
+              placeholder="Enter amount in T-Pay"
             />
           </div>
 
           <div>
-            <label className="block text-gray-700 font-medium mb-2">
-              Payment Method <span className="text-red-500">*</span>
+            <label className="block text-gray-200 font-medium mb-3">
+              Payment Method <span className="text-red-300">*</span>
             </label>
-            <select
-              value={paymentMethod}
-              onChange={(e) => setPaymentMethod(e.target.value)}
-              required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="cash">Cash</option>
-              <option value="card">Card</option>
-              <option value="mobile">Mobile Payment</option>
-            </select>
+            <div className="grid grid-cols-2 gap-4">
+              <button
+                type="button"
+                onClick={() => setPaymentMethod('cash')}
+                className={`p-4 rounded-xl border-2 transition-all duration-300 ${
+                  paymentMethod === 'cash'
+                    ? 'backdrop-blur-md bg-cyan-500/30 border-cyan-400/70 shadow-lg shadow-cyan-500/20'
+                    : 'backdrop-blur-md bg-white/10 border-white/20 hover:bg-white/15'
+                }`}
+              >
+                <Wallet className={`w-8 h-8 mx-auto mb-2 ${paymentMethod === 'cash' ? 'text-cyan-300' : 'text-gray-300'}`} />
+                <p className={`font-medium ${paymentMethod === 'cash' ? 'text-white' : 'text-gray-300'}`}>Cash</p>
+                <p className="text-xs text-gray-400 mt-1">Operator verification required</p>
+              </button>
+              
+              <button
+                type="button"
+                onClick={() => setPaymentMethod('card')}
+                className={`p-4 rounded-xl border-2 transition-all duration-300 ${
+                  paymentMethod === 'card'
+                    ? 'backdrop-blur-md bg-cyan-500/30 border-cyan-400/70 shadow-lg shadow-cyan-500/20'
+                    : 'backdrop-blur-md bg-white/10 border-white/20 hover:bg-white/15'
+                }`}
+              >
+                <CreditCard className={`w-8 h-8 mx-auto mb-2 ${paymentMethod === 'card' ? 'text-cyan-300' : 'text-gray-300'}`} />
+                <p className={`font-medium ${paymentMethod === 'card' ? 'text-white' : 'text-gray-300'}`}>Card</p>
+                <p className="text-xs text-gray-400 mt-1">Use your RFID card</p>
+              </button>
+            </div>
           </div>
 
-          <div>
-            <label className="block text-gray-700 font-medium mb-2">
-              Reference Number
-            </label>
-            <input
-              type="text"
-              value={referenceNumber}
-              onChange={(e) => setReferenceNumber(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Transaction reference (if applicable)"
-            />
-          </div>
+          {/* Card Selection (only shown when card payment is selected) */}
+          {paymentMethod === 'card' && (
+            <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-4">
+              <label className="block text-gray-200 font-medium mb-3">
+                Select Card <span className="text-red-300">*</span>
+              </label>
+              {userCards.length === 0 ? (
+                <p className="text-gray-400 text-sm">No cards available. Please add a card first.</p>
+              ) : (
+                <div className="space-y-2">
+                  {userCards.map((card) => (
+                    <label
+                      key={card.id}
+                      className={`flex items-center p-3 rounded-lg border-2 cursor-pointer transition-all duration-300 ${
+                        selectedCard === card.id.toString()
+                          ? 'backdrop-blur-md bg-cyan-500/20 border-cyan-400/50'
+                          : 'backdrop-blur-md bg-white/5 border-white/20 hover:bg-white/10'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="card"
+                        value={card.id}
+                        checked={selectedCard === card.id.toString()}
+                        onChange={(e) => setSelectedCard(e.target.value)}
+                        className="mr-3 accent-cyan-500"
+                      />
+                      <div className="flex-1">
+                        <p className="font-mono text-white font-medium">{card.uid}</p>
+                        <p className="text-sm text-gray-300">Balance: {card.balance} T-Pay</p>
+                      </div>
+                      {card.status === 'active' ? (
+                        <span className="px-2 py-1 bg-green-500/30 border border-green-400/50 text-green-100 text-xs rounded-full">Active</span>
+                      ) : (
+                        <span className="px-2 py-1 bg-red-500/30 border border-red-400/50 text-red-100 text-xs rounded-full">Inactive</span>
+                      )}
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Operator Name (only shown when cash payment is selected) */}
+          {paymentMethod === 'cash' && (
+            <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-4">
+              <label className="block text-gray-200 font-medium mb-2">
+                Operator Name <span className="text-red-300">*</span>
+              </label>
+              <p className="text-sm text-gray-400 mb-3">Enter the name of the operator who handled your cash payment</p>
+              <input
+                type="text"
+                value={operatorName}
+                onChange={(e) => setOperatorName(e.target.value)}
+                required={paymentMethod === 'cash'}
+                className="w-full px-4 py-2 backdrop-blur-md bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-cyan-400"
+                placeholder="e.g., John Doe"
+              />
+            </div>
+          )}
+
+          {/* Cash Payment Info */}
+          {paymentMethod === 'cash' && (
+            <div className="backdrop-blur-md bg-yellow-500/20 border border-yellow-400/30 rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <Clock className="w-5 h-5 text-yellow-200 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-yellow-100 font-medium mb-1">Cash Payment Process</p>
+                  <p className="text-yellow-200 text-sm">
+                    After submitting, an operator will verify your cash payment. You&apos;ll be notified in real-time when the payment is verified or rejected.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div>
-            <label className="block text-gray-700 font-medium mb-2">
-              Notes
+            <label className="block text-gray-200 font-medium mb-2">
+              Notes (Optional)
             </label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows="3"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2 backdrop-blur-md bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-cyan-400"
               placeholder="Additional information about the payment"
             />
           </div>
@@ -164,7 +313,7 @@ const ManualPayment = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+            className="w-full backdrop-blur-md bg-cyan-500/30 hover:bg-cyan-500/40 border border-cyan-400/50 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Submitting...' : 'Submit Payment Request'}
           </button>
@@ -172,50 +321,59 @@ const ManualPayment = () => {
       </div>
 
       {/* Payment History */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">Payment History</h2>
+      <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl shadow-2xl p-6">
+        <h2 className="text-2xl font-bold text-white mb-4">Payment History</h2>
         
         {payments.length === 0 ? (
-          <p className="text-gray-500 text-center py-8">No payment requests yet</p>
+          <p className="text-gray-300 text-center py-8">No payment requests yet</p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-white/20">
+              <thead className="backdrop-blur-md bg-white/5">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider">
                     Date
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider">
                     Amount
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider">
                     Method
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Verified By
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider">
+                    Operator/Card
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="backdrop-blur-sm divide-y divide-white/10">
                 {payments.map((payment) => (
-                  <tr key={payment.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <tr key={payment.id} className="hover:bg-white/5 transition-colors duration-200">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-200">
                       {new Date(payment.created_at).toLocaleString()}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {payment.amount} DZD
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">
+                      {payment.amount} T-Pay
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 capitalize">
-                      {payment.payment_method}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <span className={`px-2 py-1 rounded text-xs font-medium ${
+                        payment.payment_method === 'cash' 
+                          ? 'backdrop-blur-md bg-green-500/30 text-green-100 border border-green-400/50' 
+                          : 'backdrop-blur-md bg-blue-500/30 text-blue-100 border border-blue-400/50'
+                      }`}>
+                        {payment.payment_method.toUpperCase()}
+                      </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {getStatusBadge(payment.status)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {payment.verified_by_name || '-'}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                      {payment.payment_method === 'cash' 
+                        ? (payment.operator_name || 'N/A')
+                        : (payment.card_uid || 'Card Payment')
+                      }
                     </td>
                   </tr>
                 ))}

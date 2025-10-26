@@ -1,6 +1,8 @@
 import Card from "../models/cardModel.js";
 import Transaction from "../models/transactionModel.js";
 import db from "../config/db.js";
+import User from "../models/userModel.js";
+import { sendPaymentConfirmation, sendRechargeConfirmation } from "../utils/mailer.js";
 
 // helper to assert ownership when role === 'user'
 async function ensureCardOwnership(cardId, userId, conn) {
@@ -208,9 +210,33 @@ export const payWithMyCard = async (req, res) => {
       return res.status(400).json({ error: 'Insufficient balance' });
     }
     await connection.query('UPDATE cards SET balance = ? WHERE id = ?', [newBalance, card_id]);
-    await connection.query('INSERT INTO transactions (card_id, amount, type) VALUES (?, ?, ?)', [card.id, amount, 'payment']);
+    const [transactionResult] = await connection.query(
+      'INSERT INTO transactions (card_id, amount, type) VALUES (?, ?, ?)', 
+      [card.id, amount, 'payment']
+    );
     await connection.commit();
     connection.release();
+
+    // Fetch user details for email
+    const user = await User.findById(req.user.id);
+    
+    // Send payment confirmation email (async, non-blocking)
+    if (user && user.email) {
+      sendPaymentConfirmation({
+        userEmail: user.email,
+        userName: user.name,
+        cardUid: card.uid,
+        amount: parseFloat(amount),
+        remainingBalance: newBalance,
+        timestamp: new Date(),
+      }).catch(err => {
+        // Log email errors but don't fail the payment
+        console.error('Failed to send payment confirmation email:', err);
+      });
+    } else {
+      console.warn('⚠️  User email not found. Skipping payment confirmation email.');
+    }
+
     res.json({ success: true, balance: newBalance });
   } catch (err) {
     await connection.rollback();
@@ -240,6 +266,26 @@ export const rechargeMyCard = async (req, res) => {
       await conn.query('UPDATE cards SET balance = ? WHERE id = ?', [newBalance, card_id]);
       await conn.query('INSERT INTO transactions (card_id, amount, type) VALUES (?, ?, ?)', [card.id, amount, 'recharge']);
       await conn.commit(); conn.release();
+
+      // Fetch user details for email
+      const user = await User.findById(req.user.id);
+      
+      // Send recharge confirmation email (async, non-blocking)
+      if (user && user.email) {
+        sendRechargeConfirmation({
+          userEmail: user.email,
+          userName: user.name,
+          cardUid: card.uid,
+          amount: parseFloat(amount),
+          newBalance: newBalance,
+          timestamp: new Date(),
+        }).catch(err => {
+          console.error('Failed to send recharge confirmation email:', err);
+        });
+      } else {
+        console.warn('⚠️  User email not found. Skipping recharge confirmation email.');
+      }
+
       res.json({ message: 'Card recharged', new_balance: newBalance });
     } catch (err) {
       await conn.rollback(); conn.release();

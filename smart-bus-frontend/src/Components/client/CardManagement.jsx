@@ -47,18 +47,18 @@ const CardManagement = () => {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div className="lg:col-span-2">
-        <h2 className="text-xl font-semibold mb-4">Your Cards</h2>
-        {loading ? <div>Loading...</div> : error ? <div className="text-red-400">{error}</div> : (
+        <h2 className="text-xl font-semibold mb-4 text-white">Your Cards</h2>
+        {loading ? <div className="text-gray-300">Loading...</div> : error ? <div className="text-red-300">{error}</div> : (
           <div className="space-y-4">
             {cards.map(c => (
-              <div key={c.id} className="p-4 bg-gray-800 rounded border border-gray-700 flex items-center justify-between">
+              <div key={c.id} className="p-4 backdrop-blur-lg bg-white/10 border border-white/20 rounded-xl shadow-xl hover:bg-white/15 transition-all duration-300 flex items-center justify-between">
                 <div>
-                  <div className="font-mono">{c.uid}</div>
-                  <div className="text-sm text-gray-400">Balance: {c.balance}</div>
+                  <div className="font-mono text-white font-semibold">{c.uid}</div>
+                  <div className="text-sm text-gray-300">Balance: {c.balance} T-Pay</div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button onClick={() => { const a = prompt('Amount to recharge:'); if (a) handleRecharge(c.id, parseFloat(a)); }} className="px-3 py-1 bg-cyan-600 rounded">Recharge</button>
-                  <button onClick={() => handleDelete(c.id)} className="px-3 py-1 bg-red-600 rounded">Delete</button>
+                  <button onClick={() => { const a = prompt('Amount to recharge:'); if (a) handleRecharge(c.id, parseFloat(a)); }} className="px-3 py-1 backdrop-blur-md bg-cyan-500/30 hover:bg-cyan-500/40 border border-cyan-400/50 rounded-lg text-white font-medium transition-all duration-300">Recharge</button>
+                  <button onClick={() => handleDelete(c.id)} className="px-3 py-1 backdrop-blur-md bg-red-500/30 hover:bg-red-500/40 border border-red-400/50 rounded-lg text-white font-medium transition-all duration-300">Delete</button>
                 </div>
               </div>
             ))}

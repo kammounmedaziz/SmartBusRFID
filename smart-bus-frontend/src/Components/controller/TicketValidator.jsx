@@ -31,7 +31,7 @@ const TicketValidator = () => {
       }
 
       setValidationResult(data);
-      setSuccess(`Ticket validated successfully! Fare: ${data.fare_amount} DZD`);
+      setSuccess(`Ticket validated successfully! Fare: ${data.fare_amount} T-Pay`);
       setCardUid('');
     } catch (err) {
       setError(err.message);
@@ -72,15 +72,15 @@ const TicketValidator = () => {
             </div>
             <div>
               <span className="text-gray-600">Previous Balance:</span>
-              <p className="font-medium text-gray-900">{validationResult.previous_balance} DZD</p>
+              <p className="font-medium text-gray-900">{validationResult.previous_balance} T-Pay</p>
             </div>
             <div>
               <span className="text-gray-600">New Balance:</span>
-              <p className="font-medium text-green-600">{validationResult.new_balance} DZD</p>
+              <p className="font-medium text-green-600">{validationResult.new_balance} T-Pay</p>
             </div>
             <div>
               <span className="text-gray-600">Fare Deducted:</span>
-              <p className="font-medium text-red-600">-{validationResult.fare_amount} DZD</p>
+              <p className="font-medium text-red-600">-{validationResult.fare_amount} T-Pay</p>
             </div>
             <div>
               <span className="text-gray-600">Status:</span>

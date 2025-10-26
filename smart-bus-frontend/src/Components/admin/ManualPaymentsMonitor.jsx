@@ -116,7 +116,7 @@ const ManualPaymentsMonitor = () => {
                     {payment.user_name}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {payment.amount} DZD
+                    {payment.amount} T-Pay
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 capitalize">
                     {payment.payment_method}

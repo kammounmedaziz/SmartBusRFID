@@ -68,9 +68,9 @@ const PaymentVerification = () => {
 
   const getStatusBadge = (status) => {
     const statusConfig = {
-      pending: { bg: 'bg-yellow-100', text: 'text-yellow-800', icon: Clock },
-      verified: { bg: 'bg-green-100', text: 'text-green-800', icon: CheckCircle },
-      rejected: { bg: 'bg-red-100', text: 'text-red-800', icon: XCircle }
+      pending: { bg: 'backdrop-blur-md bg-yellow-500/30 border border-yellow-400/50', text: 'text-yellow-100', icon: Clock },
+      verified: { bg: 'backdrop-blur-md bg-green-500/30 border border-green-400/50', text: 'text-green-100', icon: CheckCircle },
+      rejected: { bg: 'backdrop-blur-md bg-red-500/30 border border-red-400/50', text: 'text-red-100', icon: XCircle }
     };
 
     const config = statusConfig[status];
@@ -86,9 +86,9 @@ const PaymentVerification = () => {
 
   const getPaymentMethodBadge = (method) => {
     const methodColors = {
-      cash: 'bg-green-50 text-green-700 border-green-200',
-      card: 'bg-blue-50 text-blue-700 border-blue-200',
-      mobile: 'bg-purple-50 text-purple-700 border-purple-200'
+      cash: 'backdrop-blur-md bg-green-500/30 text-green-100 border border-green-400/50',
+      card: 'backdrop-blur-md bg-blue-500/30 text-blue-100 border border-blue-400/50',
+      mobile: 'backdrop-blur-md bg-purple-500/30 text-purple-100 border border-purple-400/50'
     };
 
     return (
@@ -100,10 +100,10 @@ const PaymentVerification = () => {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow-md p-6">
+      <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl shadow-2xl p-6">
         <div className="text-center py-8">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading payments...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto"></div>
+          <p className="mt-4 text-gray-200">Loading payments...</p>
         </div>
       </div>
     );
@@ -113,7 +113,7 @@ const PaymentVerification = () => {
     <div className="space-y-6">
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-lg p-6 text-white">
+        <div className="backdrop-blur-xl bg-gradient-to-br from-yellow-500/30 to-yellow-600/30 border border-yellow-400/30 rounded-xl shadow-xl p-6 text-white">
           <div className="flex items-center justify-between mb-2">
             <Clock className="w-8 h-8 opacity-80" />
             <span className="text-3xl font-bold">
@@ -123,7 +123,7 @@ const PaymentVerification = () => {
           <p className="text-sm opacity-90">Pending Verification</p>
         </div>
 
-        <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-lg p-6 text-white">
+        <div className="backdrop-blur-xl bg-gradient-to-br from-green-500/30 to-green-600/30 border border-green-400/30 rounded-xl shadow-xl p-6 text-white">
           <div className="flex items-center justify-between mb-2">
             <CheckCircle className="w-8 h-8 opacity-80" />
             <span className="text-3xl font-bold">
@@ -133,7 +133,7 @@ const PaymentVerification = () => {
           <p className="text-sm opacity-90">Verified</p>
         </div>
 
-        <div className="bg-gradient-to-br from-red-500 to-red-600 rounded-lg p-6 text-white">
+        <div className="backdrop-blur-xl bg-gradient-to-br from-red-500/30 to-red-600/30 border border-red-400/30 rounded-xl shadow-xl p-6 text-white">
           <div className="flex items-center justify-between mb-2">
             <XCircle className="w-8 h-8 opacity-80" />
             <span className="text-3xl font-bold">
@@ -145,47 +145,47 @@ const PaymentVerification = () => {
       </div>
 
       {/* Payments Table */}
-      <div className="bg-white rounded-lg shadow-md p-6">
+      <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl shadow-2xl p-6">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-800">Payment Verification</h2>
+          <h2 className="text-2xl font-bold text-white">Payment Verification</h2>
           
           <div className="flex gap-2">
             <button
               onClick={() => setFilter('pending')}
-              className={`px-4 py-2 rounded-lg transition ${
+              className={`px-4 py-2 rounded-lg transition-all duration-300 ${
                 filter === 'pending'
-                  ? 'bg-yellow-600 text-white'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  ? 'backdrop-blur-md bg-yellow-500/30 border border-yellow-400/50 text-white'
+                  : 'backdrop-blur-md bg-white/10 border border-white/20 text-gray-200 hover:bg-white/15'
               }`}
             >
               Pending
             </button>
             <button
               onClick={() => setFilter('verified')}
-              className={`px-4 py-2 rounded-lg transition ${
+              className={`px-4 py-2 rounded-lg transition-all duration-300 ${
                 filter === 'verified'
-                  ? 'bg-green-600 text-white'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  ? 'backdrop-blur-md bg-green-500/30 border border-green-400/50 text-white'
+                  : 'backdrop-blur-md bg-white/10 border border-white/20 text-gray-200 hover:bg-white/15'
               }`}
             >
               Verified
             </button>
             <button
               onClick={() => setFilter('rejected')}
-              className={`px-4 py-2 rounded-lg transition ${
+              className={`px-4 py-2 rounded-lg transition-all duration-300 ${
                 filter === 'rejected'
-                  ? 'bg-red-600 text-white'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  ? 'backdrop-blur-md bg-red-500/30 border border-red-400/50 text-white'
+                  : 'backdrop-blur-md bg-white/10 border border-white/20 text-gray-200 hover:bg-white/15'
               }`}
             >
               Rejected
             </button>
             <button
               onClick={() => setFilter('all')}
-              className={`px-4 py-2 rounded-lg transition ${
+              className={`px-4 py-2 rounded-lg transition-all duration-300 ${
                 filter === 'all'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  ? 'backdrop-blur-md bg-blue-500/30 border border-blue-400/50 text-white'
+                  : 'backdrop-blur-md bg-white/10 border border-white/20 text-gray-200 hover:bg-white/15'
               }`}
             >
               All
@@ -194,57 +194,57 @@ const PaymentVerification = () => {
         </div>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+          <div className="mb-4 p-3 backdrop-blur-md bg-red-500/20 border border-red-400/30 text-red-100 rounded-lg">
             {error}
           </div>
         )}
 
         {payments.length === 0 ? (
-          <p className="text-gray-500 text-center py-8">No payments found</p>
+          <p className="text-gray-300 text-center py-8">No payments found</p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-white/20">
+              <thead className="backdrop-blur-md bg-white/5">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider">
                     Date
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider">
                     User
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider">
                     Amount
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider">
                     Method
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider">
                     Reference
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="backdrop-blur-sm divide-y divide-white/10">
                 {payments.map((payment) => (
-                  <tr key={payment.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <tr key={payment.id} className="hover:bg-white/5 transition-colors duration-200">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-200">
                       {new Date(payment.created_at).toLocaleString()}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">
                       {payment.user_name}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
-                      {payment.amount} DZD
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-white">
+                      {payment.amount} T-Pay
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       {getPaymentMethodBadge(payment.payment_method)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-300">
                       {payment.reference_number || '-'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
@@ -255,13 +255,13 @@ const PaymentVerification = () => {
                         <div className="flex gap-2">
                           <button
                             onClick={() => handleVerifyPayment(payment.id, 'verified')}
-                            className="text-green-600 hover:text-green-900 font-medium"
+                            className="text-green-300 hover:text-green-100 font-medium transition-colors duration-200"
                           >
                             Verify
                           </button>
                           <button
                             onClick={() => handleVerifyPayment(payment.id, 'rejected')}
-                            className="text-red-600 hover:text-red-900 font-medium"
+                            className="text-red-300 hover:text-red-100 font-medium transition-colors duration-200"
                           >
                             Reject
                           </button>

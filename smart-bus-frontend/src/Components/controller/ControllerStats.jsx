@@ -107,7 +107,7 @@ const ControllerStats = () => {
             </div>
             <div className="text-right">
               <p className="text-sm text-gray-600">Total Revenue</p>
-              <p className="text-2xl font-bold text-green-600">{stats.total_fare_collected || 0} DZD</p>
+              <p className="text-2xl font-bold text-green-600">{stats.total_fare_collected || 0} T-Pay</p>
             </div>
           </div>
         </div>
