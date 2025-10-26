@@ -8,7 +8,8 @@
     "dev": "nodemon server.js",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand",
     "test-db": "node test-db.js",
-    "init-db": "node scripts/init-db.js"
+    "init-db": "node scripts/init-db.js",
+    "esp32:usb": "node start-esp32-usb.js"
   },
   "keywords": [],
   "author": "",
@@ -23,7 +24,8 @@
     "jsonwebtoken": "^9.0.0",
     "morgan": "^1.10.0",
     "mysql2": "^3.15.2",
-    "nodemailer": "^7.0.10"
+    "nodemailer": "^7.0.10",
+    "serialport": "^13.0.0"
   },
   "devDependencies": {
     "jest": "^29.6.1",

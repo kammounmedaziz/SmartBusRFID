@@ -7,6 +7,7 @@ import authRoutes from "./routes/authRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import controllerRoutes from "./routes/controllerRoutes.js";
 import manualPaymentRoutes from "./routes/manualPaymentRoutes.js";
+import esp32Routes from "./routes/esp32Routes.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 
 dotenv.config();
@@ -22,6 +23,9 @@ app.use(express.urlencoded({ extended: true }));
 
 // Test endpoint
 app.get("/", (req, res) => res.send("SmartBus API is running ✅"));
+
+// ESP32/RFID routes (IoT device endpoints)
+app.use("/api/rfid", esp32Routes);
 
 // Card routes
 app.use("/api/cards", cardRoutes);
