@@ -77,3 +77,45 @@ CREATE TABLE controller_logs (
   INDEX idx_controller_id (controller_id),
   INDEX idx_timestamp (timestamp)
 );
+
+-- Table for bus trips (Tunisia routes)
+CREATE TABLE trips (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  from_city VARCHAR(100) NOT NULL,
+  to_city VARCHAR(100) NOT NULL,
+  departure_time TIME NOT NULL,
+  arrival_time TIME NOT NULL,
+  duration_minutes INT NOT NULL,
+  price DECIMAL(10,2) NOT NULL,
+  available_seats INT DEFAULT 40,
+  bus_type ENUM('standard','express','luxury') DEFAULT 'standard',
+  status ENUM('active','cancelled','full') DEFAULT 'active',
+  operating_days VARCHAR(50) DEFAULT 'Mon,Tue,Wed,Thu,Fri,Sat,Sun',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_route (from_city, to_city),
+  INDEX idx_departure (departure_time),
+  INDEX idx_status (status)
+);
+
+-- Table for guest tickets (card payment without login)
+CREATE TABLE tickets (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  ticket_number VARCHAR(50) UNIQUE NOT NULL,
+  trip_id INT NOT NULL,
+  card_uid VARCHAR(50) NOT NULL,
+  passenger_name VARCHAR(100),
+  passenger_phone VARCHAR(20),
+  purchase_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  travel_date DATE NOT NULL,
+  seat_number VARCHAR(10),
+  amount_paid DECIMAL(10,2) NOT NULL,
+  status ENUM('booked','used','cancelled','expired') DEFAULT 'booked',
+  validation_time TIMESTAMP NULL,
+  validated_by INT NULL,
+  FOREIGN KEY (trip_id) REFERENCES trips(id) ON DELETE CASCADE,
+  FOREIGN KEY (validated_by) REFERENCES users(id) ON DELETE SET NULL,
+  INDEX idx_card_uid (card_uid),
+  INDEX idx_ticket_number (ticket_number),
+  INDEX idx_travel_date (travel_date),
+  INDEX idx_status (status)
+);

@@ -115,23 +115,38 @@ class ESP32SerialService {
       message = message.trim();
       if (!message) return;
 
-      // Check if message is plain text (UID de la carte : XX XX XX XX)
-      if (message.startsWith('UID de la carte')) {
-        const uidMatch = message.match(/UID de la carte\s*:\s*([0-9A-Fa-f\s]+)/i);
-        if (uidMatch) {
-          const uid = uidMatch[1].replace(/\s+/g, '').toUpperCase(); // Remove spaces
-          console.log(`\n📨 Received UID from ESP32 (plain text): ${uid}`);
-          
-          // Treat as scan event
-          if (this.registrationMode && this.registrationCallback) {
-            console.log('🎴 Card scanned for registration:', uid);
-            this.registrationCallback(null, uid);
-            this.exitRegistrationMode();
-          } else {
-            await this.processCardScan(uid);
-          }
-          return;
+      // Check if message contains card ID in French format: "ID de la carte : XX XX XX XX"
+      const idMatch = message.match(/ID de la carte\s*:\s*([0-9A-Fa-f\s]+)/i);
+      if (idMatch) {
+        const uid = idMatch[1].trim().replace(/\s+/g, '').toUpperCase(); // Remove spaces and uppercase
+        console.log(`\n📨 Received card UID from ESP32: ${uid}`);
+        
+        // Treat as scan event
+        if (this.registrationMode && this.registrationCallback) {
+          console.log('🎴 Card scanned for registration:', uid);
+          this.registrationCallback(null, uid);
+          this.exitRegistrationMode();
+        } else {
+          await this.processCardScan(uid);
         }
+        return;
+      }
+
+      // Also check for UID format (alternative)
+      const uidMatch = message.match(/UID de la carte\s*:\s*([0-9A-Fa-f\s]+)/i);
+      if (uidMatch) {
+        const uid = uidMatch[1].trim().replace(/\s+/g, '').toUpperCase(); // Remove spaces and uppercase
+        console.log(`\n📨 Received card UID from ESP32: ${uid}`);
+        
+        // Treat as scan event
+        if (this.registrationMode && this.registrationCallback) {
+          console.log('🎴 Card scanned for registration:', uid);
+          this.registrationCallback(null, uid);
+          this.exitRegistrationMode();
+        } else {
+          await this.processCardScan(uid);
+        }
+        return;
       }
 
       // Try to parse as JSON
@@ -170,8 +185,14 @@ class ESP32SerialService {
           console.log('ℹ️  Unknown message type:', data.type);
       }
     } catch (error) {
-      console.error('❌ Error parsing message:', error.message);
-      console.log('   Raw message:', message);
+      // Silently ignore non-JSON messages that don't contain card IDs
+      // (ESP32 sends debug output and French error messages)
+      if (!message.includes('ID de la carte') && !message.includes('UID de la carte')) {
+        // Only log if it looks like it might be important
+        if (message.length > 0 && !message.includes('�')) {
+          console.log('ℹ️  ESP32 message (non-JSON):', message.substring(0, 100));
+        }
+      }
     }
   }
 

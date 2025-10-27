@@ -8,6 +8,7 @@ import adminRoutes from "./routes/adminRoutes.js";
 import controllerRoutes from "./routes/controllerRoutes.js";
 import manualPaymentRoutes from "./routes/manualPaymentRoutes.js";
 import esp32Routes from "./routes/esp32Routes.js";
+import tripRoutes from "./routes/tripRoutes.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import esp32Service from "./services/esp32SerialService.js";
 
@@ -27,6 +28,9 @@ app.get("/", (req, res) => res.send("SmartBus API is running ✅"));
 
 // ESP32/RFID routes (IoT device endpoints)
 app.use("/api/rfid", esp32Routes);
+
+// Trip and ticket routes (guest booking - no auth required)
+app.use("/api", tripRoutes);
 
 // Card routes
 app.use("/api/cards", cardRoutes);

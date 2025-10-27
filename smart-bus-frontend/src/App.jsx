@@ -15,6 +15,7 @@ import ClientDashboard from './Pages/client/ClientDashboard';
 import AdminDashboard from './Pages/admin/AdminDashboard';
 import ControllerDashboard from './Pages/controller/ControllerDashboard';
 import OperatorDashboard from './Pages/operator/OperatorDashboard';
+import GuestBooking from './Pages/booking/GuestBooking';
 
 
 const LandingPage = ({ showWelcome, setShowWelcome }) => {
@@ -62,6 +63,7 @@ function App() {
           element={<LandingPage showWelcome={showWelcome} setShowWelcome={setShowWelcome} />}
         />
         <Route path="/auth" element={<AuthPage />} />
+        <Route path="/book-ticket" element={<GuestBooking />} />
         <Route path="/client" element={<ClientDashboard />} />
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/AdminDashboard" element={<AdminDashboard />} />

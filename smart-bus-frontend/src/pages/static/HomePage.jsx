@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import {Sparkles } from 'lucide-react';
 
 const AnimatedBackground = () => {
@@ -111,12 +112,33 @@ const Home = () => {
             </span>
           </button>
           
-          <a 
-            href="#about" 
-            className="px-8 py-4 md:px-12 md:py-5 text-lg font-medium rounded-2xl border-2 border-gray-500/60 bg-gradient-to-br from-gray-800/50 to-gray-900/50 text-gray-100 shadow-lg hover:bg-gradient-to-br hover:from-gray-700/60 hover:to-gray-800/60 hover:border-gray-400/70 transition-all duration-300 hover:scale-105"
+          <Link 
+            to="/book-ticket" 
+            className="relative w-full lg:w-auto px-8 py-4 md:px-12 md:py-5 rounded-2xl overflow-hidden group transition-all duration-500 hover:scale-105"
           >
-            Learn more
-          </a>
+            {/* Gradient background */}
+            <span className="absolute inset-0 bg-gradient-to-r from-green-500 via-green-600 to-emerald-600 opacity-90 group-hover:opacity-100 transition-opacity duration-300" />
+            
+            {/* Shine effect on hover */}
+            <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
+            
+            {/* Border glow */}
+            <span className="absolute -inset-1 bg-gradient-to-r from-green-400 via-green-500 to-emerald-500 rounded-2xl opacity-30 blur-md group-hover:opacity-60 transition-opacity duration-300" />
+            
+            {/* Button content */}
+            <span className="relative z-10 flex items-center justify-center gap-3 text-white font-bold text-lg tracking-wide drop-shadow-lg">
+              <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="2" y="5" width="20" height="14" rx="2" stroke="currentColor" strokeWidth="2"/>
+                <path d="M2 10h20" stroke="currentColor" strokeWidth="2"/>
+                <circle cx="7" cy="15" r="1" fill="currentColor"/>
+                <circle cx="12" cy="15" r="1" fill="currentColor"/>
+              </svg>
+              Pay with Your Card
+              <svg className="w-5 h-5 text-white/90 group-hover:translate-x-1 transition-transform duration-300" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </span>
+          </Link>
         </div>
          <div className="mt-16 flex items-center justify-center gap-8 text-gray-500">
           <div className="w-12 h-px bg-gradient-to-r from-transparent to-cyan-500" />
