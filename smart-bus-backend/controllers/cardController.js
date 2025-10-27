@@ -3,6 +3,7 @@ import Transaction from "../models/transactionModel.js";
 import db from "../config/db.js";
 import User from "../models/userModel.js";
 import { sendPaymentConfirmation, sendRechargeConfirmation } from "../utils/mailer.js";
+import esp32Service from "../services/esp32SerialService.js";
 
 // helper to assert ownership when role === 'user'
 async function ensureCardOwnership(cardId, userId, conn) {
@@ -160,14 +161,30 @@ export const createCard = async (req, res) => {
 // Authenticated user creates their own card
 export const createCardForMe = async (req, res) => {
   try {
-    if (!req.user) return res.status(401).json({ error: 'Unauthorized' })
-    const { uid, balance = 0, status = 'active' } = req.body || {}
-    if (!uid) return res.status(400).json({ error: 'uid required' })
-    const id = await Card.createCard({ uid, user_id: req.user.id, balance, status })
-    res.status(201).json({ id, uid, user_id: req.user.id, balance, status })
+    if (!req.user) {
+      console.log('❌ createCardForMe: No user in request');
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    
+    const { uid, balance = 0, status = 'active' } = req.body || {};
+    console.log('📝 createCardForMe called:', { uid, balance, status, userId: req.user.id });
+    
+    if (!uid) {
+      console.log('❌ createCardForMe: UID missing');
+      return res.status(400).json({ error: 'uid required' });
+    }
+    
+    console.log('💾 Creating card in database...');
+    const id = await Card.createCard({ uid, user_id: req.user.id, balance, status });
+    console.log('✅ Card created successfully with ID:', id);
+    
+    res.status(201).json({ id, uid, user_id: req.user.id, balance, status });
   } catch (err) {
-    console.error(err)
-    res.status(500).json({ error: 'Server error' })
+    console.error('❌ createCardForMe error:', err);
+    if (err.code === 'ER_DUP_ENTRY') {
+      return res.status(409).json({ error: 'Card with this UID already exists' });
+    }
+    res.status(500).json({ error: err.message || 'Server error' });
   }
 }
 
@@ -316,6 +333,63 @@ export const deleteMyCard = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error' });
+  }
+};
+
+/**
+ * Scan RFID card using ESP32 for registration
+ * This endpoint puts the ESP32 in registration mode and waits for a card scan
+ */
+export const scanCardWithESP32 = async (req, res) => {
+  try {
+    // Check if ESP32 is connected
+    if (!esp32Service.isConnected) {
+      return res.status(503).json({ 
+        error: 'ESP32 RFID reader not connected',
+        message: 'Please ensure the ESP32 is connected via USB'
+      });
+    }
+
+    // Check if already in registration mode
+    if (esp32Service.isInRegistrationMode()) {
+      return res.status(409).json({ 
+        error: 'Registration already in progress',
+        message: 'Another scan is in progress. Please wait.'
+      });
+    }
+
+    console.log('🎴 Starting card scan for user:', req.user.id);
+
+    // Enter registration mode and wait for card scan
+    const timeout = parseInt(req.query.timeout) || 30000; // 30 seconds default
+    
+    try {
+      const uid = await esp32Service.enterRegistrationMode(timeout);
+      
+      console.log('✅ Card scanned successfully:', uid);
+      
+      // Return the scanned UID to the frontend
+      res.json({ 
+        success: true,
+        uid: uid,
+        message: 'Card scanned successfully'
+      });
+      
+    } catch (scanError) {
+      if (scanError.message.includes('timeout')) {
+        return res.status(408).json({ 
+          error: 'Scan timeout',
+          message: 'No card was scanned within the time limit. Please try again.'
+        });
+      }
+      throw scanError;
+    }
+    
+  } catch (err) {
+    console.error('❌ Error during card scan:', err);
+    res.status(err.status || 500).json({ 
+      error: err.message || 'Failed to scan card'
+    });
   }
 };
 

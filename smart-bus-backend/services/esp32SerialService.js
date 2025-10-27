@@ -25,6 +25,11 @@ class ESP32SerialService {
     
     // Default fare
     this.defaultFare = parseFloat(process.env.DEFAULT_FARE) || 50;
+    
+    // Card registration mode
+    this.registrationMode = false;
+    this.registrationCallback = null;
+    this.registrationTimeout = null;
   }
 
   /**
@@ -110,7 +115,26 @@ class ESP32SerialService {
       message = message.trim();
       if (!message) return;
 
-      // Parse JSON message
+      // Check if message is plain text (UID de la carte : XX XX XX XX)
+      if (message.startsWith('UID de la carte')) {
+        const uidMatch = message.match(/UID de la carte\s*:\s*([0-9A-Fa-f\s]+)/i);
+        if (uidMatch) {
+          const uid = uidMatch[1].replace(/\s+/g, '').toUpperCase(); // Remove spaces
+          console.log(`\n📨 Received UID from ESP32 (plain text): ${uid}`);
+          
+          // Treat as scan event
+          if (this.registrationMode && this.registrationCallback) {
+            console.log('🎴 Card scanned for registration:', uid);
+            this.registrationCallback(null, uid);
+            this.exitRegistrationMode();
+          } else {
+            await this.processCardScan(uid);
+          }
+          return;
+        }
+      }
+
+      // Try to parse as JSON
       const data = JSON.parse(message);
       
       console.log(`\n📨 Received from ESP32:`, data);
@@ -123,8 +147,15 @@ class ESP32SerialService {
           break;
 
         case 'scan':
-          // Card scanned - process payment
-          await this.processCardScan(data.uid);
+          // Check if in registration mode
+          if (this.registrationMode && this.registrationCallback) {
+            console.log('🎴 Card scanned for registration:', data.uid);
+            this.registrationCallback(null, data.uid);
+            this.exitRegistrationMode();
+          } else {
+            // Normal payment mode
+            await this.processCardScan(data.uid);
+          }
           break;
 
         case 'pong':
@@ -307,6 +338,76 @@ class ESP32SerialService {
       defaultFare: this.defaultFare,
       cooldownSeconds: this.cooldownSeconds
     });
+  }
+
+  /**
+   * Enter card registration mode
+   * Returns a promise that resolves with the scanned card UID
+   */
+  enterRegistrationMode(timeoutMs = 30000) {
+    return new Promise((resolve, reject) => {
+      if (!this.isConnected) {
+        return reject(new Error('ESP32 not connected'));
+      }
+
+      if (this.registrationMode) {
+        return reject(new Error('Already in registration mode'));
+      }
+
+      console.log('🎴 Entering card registration mode...');
+      console.log(`⏰ Waiting ${timeoutMs / 1000} seconds for card scan...`);
+
+      this.registrationMode = true;
+      this.registrationCallback = (error, uid) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(uid);
+        }
+      };
+
+      // Set timeout
+      this.registrationTimeout = setTimeout(() => {
+        this.exitRegistrationMode();
+        reject(new Error('Registration timeout - no card scanned'));
+      }, timeoutMs);
+
+      // Send notification to ESP32 (optional - for LED/buzzer indication)
+      this.sendCommand({
+        type: 'mode',
+        mode: 'registration',
+        message: 'Waiting for card scan...'
+      });
+    });
+  }
+
+  /**
+   * Exit card registration mode
+   */
+  exitRegistrationMode() {
+    if (this.registrationTimeout) {
+      clearTimeout(this.registrationTimeout);
+      this.registrationTimeout = null;
+    }
+
+    this.registrationMode = false;
+    this.registrationCallback = null;
+
+    console.log('✅ Exited registration mode');
+
+    // Send notification to ESP32
+    this.sendCommand({
+      type: 'mode',
+      mode: 'payment',
+      message: 'Back to payment mode'
+    });
+  }
+
+  /**
+   * Check if ESP32 is in registration mode
+   */
+  isInRegistrationMode() {
+    return this.registrationMode;
   }
 }
 

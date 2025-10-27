@@ -26,8 +26,9 @@ export async function login(email, password) {
   return request('/auth/login', { method: 'POST', body: { email, password } });
 }
 
-export async function register({ name, email, password, role = 'user' }) {
-  return request('/auth/register', { method: 'POST', body: { name, email, password, role } });
+export async function register({ name, email, password }) {
+  // Backend always assigns 'user' role to new registrations
+  return request('/auth/register', { method: 'POST', body: { name, email, password } });
 }
 
 export async function me(token) {
@@ -57,6 +58,10 @@ export async function rechargeMyCard(token, { card_id, amount }) {
 
 export async function deleteMyCard(token, id) {
   return request(`/api/cards/me/${id}`, { method: 'DELETE', token });
+}
+
+export async function scanCardWithRFID(token, timeout = 30000) {
+  return request(`/api/cards/me/scan-rfid?timeout=${timeout}`, { method: 'POST', token });
 }
 
 // Admin/operator actions
@@ -90,6 +95,7 @@ export default {
   getMyTransactions,
   rechargeMyCard,
   deleteMyCard,
+  scanCardWithRFID,
   rechargeCard,
   payFare,
   createCard,

@@ -1,7 +1,7 @@
 import express from "express";
 import Joi from 'joi';
 import { validateBody } from '../middleware/validate.js';
-import { getCards, rechargeCard, payFare, getTransactions, getMyCards, payWithMyCard, getMyTransactions, rechargeMyCard, deleteMyCard } from "../controllers/cardController.js";
+import { getCards, rechargeCard, payFare, getTransactions, getMyCards, payWithMyCard, getMyTransactions, rechargeMyCard, deleteMyCard, scanCardWithESP32 } from "../controllers/cardController.js";
 import { createCard, createCardForMe } from "../controllers/cardController.js";
 import { requireAuth } from "../middleware/auth.js";
 
@@ -20,6 +20,9 @@ router.post('/', requireAuth(['admin']), createCard);
 
 // Create card for authenticated user
 router.post('/me', requireAuth(['user']), createCardForMe);
+
+// Scan card with ESP32 RFID reader (user must be authenticated)
+router.post('/me/scan-rfid', requireAuth(['user']), scanCardWithESP32);
 
 // user-scoped: get cards for the authenticated user
 router.get('/me/cards', requireAuth(['user']), getMyCards);

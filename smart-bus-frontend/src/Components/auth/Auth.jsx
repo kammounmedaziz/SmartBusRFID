@@ -205,7 +205,7 @@ const SignInComponent = ({ onSubmit }) => {
 // Sign Up Component
 const SignUpComponent = ({ onSubmit }) => {
   const [formData, setFormData] = useState({
-    user_type: 'passenger',
+    user_type: 'user',  // Changed from 'passenger' to 'user' to match database ENUM
     first_name: '',
     last_name: '',
     cin: '',
@@ -227,7 +227,8 @@ const SignUpComponent = ({ onSubmit }) => {
     delete payload.confirm_password;
 
     try {
-      const data = await api.register({ name: `${formData.first_name} ${formData.last_name}`, email: formData.email, password: formData.password, role: formData.user_type });
+      // Backend always registers users with 'user' role, no need to send role parameter
+      const data = await api.register({ name: `${formData.first_name} ${formData.last_name}`, email: formData.email, password: formData.password });
       onSubmit(data);
     } catch (error) {
       alert("Registration failed:\n" + error.message);

@@ -9,6 +9,7 @@ import controllerRoutes from "./routes/controllerRoutes.js";
 import manualPaymentRoutes from "./routes/manualPaymentRoutes.js";
 import esp32Routes from "./routes/esp32Routes.js";
 import { errorHandler } from "./middleware/errorHandler.js";
+import esp32Service from "./services/esp32SerialService.js";
 
 dotenv.config();
 const app = express();
@@ -47,7 +48,24 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 if (process.env.NODE_ENV !== 'test') {
-	app.listen(PORT, () => console.log(`🚍 Server running on port ${PORT}`));
+	app.listen(PORT, async () => {
+		console.log(`🚍 Server running on port ${PORT}`);
+		
+		// Auto-connect to ESP32 if USB port is configured
+		const usbPort = process.env.ESP32_USB_PORT;
+		if (usbPort) {
+			console.log(`\n🔌 Auto-connecting to ESP32 on ${usbPort}...`);
+			try {
+				await esp32Service.connect(usbPort, 115200);
+				console.log('✅ ESP32 USB ready for card registration and payments!\n');
+			} catch (error) {
+				console.warn('⚠️  ESP32 not connected. Card scanning will not be available.');
+				console.warn('   To enable: Connect ESP32 and restart server.\n');
+			}
+		} else {
+			console.log('\n💡 Tip: Set ESP32_USB_PORT in .env to auto-connect ESP32\n');
+		}
+	});
 }
 
 export default app;
