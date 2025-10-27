@@ -320,68 +320,7 @@ const ManualPayment = () => {
         </form>
       </div>
 
-      {/* Payment History */}
-      <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl shadow-2xl p-6">
-        <h2 className="text-2xl font-bold text-white mb-4">Payment History</h2>
-        
-        {payments.length === 0 ? (
-          <p className="text-gray-300 text-center py-8">No payment requests yet</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-white/20">
-              <thead className="backdrop-blur-md bg-white/5">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider">
-                    Date
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider">
-                    Amount
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider">
-                    Method
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider">
-                    Operator/Card
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="backdrop-blur-sm divide-y divide-white/10">
-                {payments.map((payment) => (
-                  <tr key={payment.id} className="hover:bg-white/5 transition-colors duration-200">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-200">
-                      {new Date(payment.created_at).toLocaleString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">
-                      {payment.amount} T-Pay
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <span className={`px-2 py-1 rounded text-xs font-medium ${
-                        payment.payment_method === 'cash' 
-                          ? 'backdrop-blur-md bg-green-500/30 text-green-100 border border-green-400/50' 
-                          : 'backdrop-blur-md bg-blue-500/30 text-blue-100 border border-blue-400/50'
-                      }`}>
-                        {payment.payment_method.toUpperCase()}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {getStatusBadge(payment.status)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                      {payment.payment_method === 'cash' 
-                        ? (payment.operator_name || 'N/A')
-                        : (payment.card_uid || 'Card Payment')
-                      }
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+      
     </div>
   );
 };

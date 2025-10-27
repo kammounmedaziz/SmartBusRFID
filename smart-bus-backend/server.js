@@ -5,6 +5,7 @@ import morgan from "morgan";
 import cardRoutes from "./routes/cardRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
+import operatorRoutes from "./routes/operatorRoutes.js";
 import controllerRoutes from "./routes/controllerRoutes.js";
 import manualPaymentRoutes from "./routes/manualPaymentRoutes.js";
 import esp32Routes from "./routes/esp32Routes.js";
@@ -40,6 +41,9 @@ app.use("/auth", authRoutes);
 
 // Admin routes (users, reports)
 app.use('/api', adminRoutes);
+
+// Operator routes (dashboard, user management, payment verification)
+app.use('/api/operator', operatorRoutes);
 
 // Controller routes (ticket validation, logs)
 app.use('/api/controller', controllerRoutes);

@@ -16,30 +16,22 @@ const OperatorStats = () => {
 
   const fetchStats = async () => {
     try {
-      // Fetch users count
-      const usersResponse = await fetch('http://localhost:5000/api/users', {
+      // Fetch all stats from single endpoint
+      const response = await fetch('http://localhost:5000/api/operator/stats', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
-      const users = await usersResponse.json();
-
-      // Fetch payments for stats
-      const paymentsResponse = await fetch('http://localhost:5000/api/manual-payments/all', {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      });
-      const payments = await paymentsResponse.json();
-
-      const today = new Date().toDateString();
-      const verifiedToday = payments.filter(p => 
-        p.status === 'verified' && 
-        p.verified_at && 
-        new Date(p.verified_at).toDateString() === today
-      ).length;
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch statistics');
+      }
+      
+      const data = await response.json();
 
       setStats({
-        totalUsers: users.length,
-        activeCards: users.filter(u => u.role === 'user').length * 1.2, // Approximate
-        pendingPayments: payments.filter(p => p.status === 'pending').length,
-        verifiedToday
+        totalUsers: data.totalUsers || 0,
+        activeCards: data.activeCards || 0,
+        pendingPayments: data.pendingPayments || 0,
+        verifiedToday: data.verifiedToday || 0
       });
     } catch (err) {
       console.error('Error fetching stats:', err);

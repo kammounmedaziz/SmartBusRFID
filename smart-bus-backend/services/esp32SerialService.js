@@ -223,7 +223,7 @@ class ESP32SerialService {
       }
 
       // Get card info
-      const card = await cardModel.findByUID(uid);
+      const card = await cardModel.findByUid(uid);
       
       if (!card) {
         console.log('❌ Card not found');

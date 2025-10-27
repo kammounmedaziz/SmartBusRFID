@@ -10,6 +10,12 @@ const CardScanner = ({ trip, travelDate, passengerName, passengerPhone, onScanSu
 
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
+  // Auto-start scanning when component mounts
+  useEffect(() => {
+    scanAndPay();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useEffect(() => {
     let timer;
     if (scanning && countdown > 0) {
@@ -104,19 +110,8 @@ const CardScanner = ({ trip, travelDate, passengerName, passengerPhone, onScanSu
 
         {/* Scanner Status */}
         <div className="space-y-6">
-          {/* Not Scanning or Processing - Show Scan Button */}
-          {!scanning && !processing && (
-            <button
-              onClick={scanAndPay}
-              className="w-full py-4 px-6 bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white font-bold rounded-xl shadow-lg shadow-cyan-500/50 transition-all duration-300 hover:scale-105 flex items-center justify-center gap-3"
-            >
-              <CreditCard className="w-6 h-6" />
-              Scan Card & Pay
-            </button>
-          )}
-
-          {/* Scanning State */}
-          {scanning && (
+          {/* Scanning State - Auto-started */}
+          {scanning && !error && (
             <div className="text-center py-8">
               <Loader2 className="w-16 h-16 text-cyan-400 animate-spin mx-auto mb-4" />
               <p className="text-white text-lg font-semibold mb-2">
@@ -142,12 +137,26 @@ const CardScanner = ({ trip, travelDate, passengerName, passengerPhone, onScanSu
 
           {/* Error Display */}
           {error && (
-            <div className="bg-red-500/20 border border-red-500/50 rounded-xl p-4 flex items-start gap-3">
-              <AlertCircle className="w-6 h-6 text-red-400 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="text-red-400 font-semibold">Error</p>
-                <p className="text-gray-300 text-sm mt-1">{error}</p>
+            <div className="space-y-4">
+              <div className="bg-red-500/20 border border-red-500/50 rounded-xl p-4 flex items-start gap-3">
+                <AlertCircle className="w-6 h-6 text-red-400 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-red-400 font-semibold">Error</p>
+                  <p className="text-gray-300 text-sm mt-1">{error}</p>
+                </div>
               </div>
+              
+              {/* Try Again Button */}
+              <button
+                onClick={() => {
+                  setError(null);
+                  scanAndPay();
+                }}
+                className="w-full py-4 px-6 bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white font-bold rounded-xl shadow-lg shadow-cyan-500/50 transition-all duration-300 hover:scale-105 flex items-center justify-center gap-3"
+              >
+                <CreditCard className="w-6 h-6" />
+                Try Again
+              </button>
             </div>
           )}
 

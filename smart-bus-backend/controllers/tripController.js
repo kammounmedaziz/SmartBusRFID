@@ -92,6 +92,12 @@ export const bookGuestTicket = async (req, res) => {
       });
     }
 
+    // Exit any existing registration mode first
+    if (esp32Service.registrationMode) {
+      console.log('⚠️  Clearing existing registration mode...');
+      esp32Service.exitRegistrationMode();
+    }
+
     // Enter registration mode to scan card
     console.log('\n🎫 Starting guest ticket booking - waiting for card scan...');
     
@@ -138,9 +144,17 @@ export const bookGuestTicket = async (req, res) => {
     const newBalance = parseFloat(card.balance) - parseFloat(trip.price);
     await cardModel.updateBalanceByUid(cardUid, newBalance);
 
-    // Create transaction
+    // Debug: Log card object to verify id field
+    console.log('🔍 Card object before transaction:', {
+      id: card.id,
+      uid: card.uid,
+      balance: card.balance,
+      fullCard: card
+    });
+
+    // Create transaction - NOTE: transaction model uses card_id (underscore) not cardId (camelCase)
     await transactionModel.create({
-      cardId: card.id,
+      card_id: card.id,  // Fixed: was cardId, now card_id to match model
       amount: -trip.price,
       type: 'payment',
       description: `Ticket: ${trip.from_city} → ${trip.to_city}`

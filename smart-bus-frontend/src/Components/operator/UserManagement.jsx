@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
-import { UserPlus, X } from 'lucide-react';
+import { UserPlus, X, Search } from 'lucide-react';
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [hasSearched, setHasSearched] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -15,19 +17,51 @@ const UserManagement = () => {
   const [formError, setFormError] = useState('');
   const [formSuccess, setFormSuccess] = useState('');
 
+  // Load all users on component mount
   useEffect(() => {
-    fetchUsers();
+    loadAllUsers();
   }, []);
 
-  const fetchUsers = async () => {
+  const loadAllUsers = async () => {
+    setLoading(true);
+    setError('');
     try {
-      const response = await fetch('http://localhost:5000/api/users', {
+      const response = await fetch('http://localhost:5000/api/operator/users/search', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
       });
 
-      if (!response.ok) throw new Error('Failed to fetch users');
+      if (!response.ok) throw new Error('Failed to load users');
+      const data = await response.json();
+      setUsers(data);
+      setHasSearched(false); // Show all users initially
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const searchUsers = async (query) => {
+    if (!query || query.trim().length === 0) {
+      // If search is cleared, load all users again
+      loadAllUsers();
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+    setHasSearched(true);
+
+    try {
+      const response = await fetch(`http://localhost:5000/api/operator/users/search?q=${encodeURIComponent(query)}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      if (!response.ok) throw new Error('Failed to search users');
       const data = await response.json();
       setUsers(data);
     } catch (err) {
@@ -37,13 +71,27 @@ const UserManagement = () => {
     }
   };
 
+  const handleSearch = (e) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+    
+    // Debounce search - clear previous timeout
+    if (window.searchTimeout) {
+      clearTimeout(window.searchTimeout);
+    }
+    
+    window.searchTimeout = setTimeout(() => {
+      searchUsers(value);
+    }, 500);
+  };
+
   const handleCreateUser = async (e) => {
     e.preventDefault();
     setFormError('');
     setFormSuccess('');
 
     try {
-      const response = await fetch('http://localhost:5000/api/users', {
+      const response = await fetch('http://localhost:5000/api/operator/users', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -59,7 +107,14 @@ const UserManagement = () => {
 
       setFormSuccess('User created successfully!');
       setFormData({ name: '', email: '', password: '', role: 'user' });
-      fetchUsers();
+      
+      // Refresh user list
+      if (searchQuery.trim().length > 0) {
+        searchUsers(searchQuery);
+      } else {
+        loadAllUsers();
+      }
+
       setTimeout(() => {
         setShowCreateModal(false);
         setFormSuccess('');
@@ -73,15 +128,24 @@ const UserManagement = () => {
     if (!window.confirm('Are you sure you want to delete this user?')) return;
 
     try {
-      const response = await fetch(`http://localhost:5000/api/users/${userId}`, {
+      const response = await fetch(`http://localhost:5000/api/operator/users/${userId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
       });
 
-      if (!response.ok) throw new Error('Failed to delete user');
-      fetchUsers();
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete user');
+      }
+
+      // Refresh user list
+      if (searchQuery.trim().length > 0) {
+        searchUsers(searchQuery);
+      } else {
+        loadAllUsers();
+      }
     } catch (err) {
       alert('Error: ' + err.message);
     }
@@ -101,17 +165,6 @@ const UserManagement = () => {
     );
   };
 
-  if (loading) {
-    return (
-      <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl shadow-2xl p-6">
-        <div className="text-center py-8">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto"></div>
-          <p className="mt-4 text-gray-200">Loading users...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
       <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl shadow-2xl p-6">
@@ -126,14 +179,46 @@ const UserManagement = () => {
           </button>
         </div>
 
+        {/* Search Bar */}
+        <div className="mb-6">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={handleSearch}
+              placeholder="Search users by name or email..."
+              className="w-full pl-11 pr-4 py-3 backdrop-blur-md bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300"
+            />
+          </div>
+          <p className="mt-2 text-sm text-gray-400">
+            {hasSearched 
+              ? `Found ${users.length} user${users.length !== 1 ? 's' : ''}`
+              : `${users.length} user${users.length !== 1 ? 's' : ''} loaded`}
+          </p>
+        </div>
+
         {error && (
           <div className="mb-4 p-3 backdrop-blur-md bg-red-500/20 border border-red-400/30 text-red-100 rounded-lg">
             {error}
           </div>
         )}
 
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-white/20">
+        {loading ? (
+          <div className="text-center py-8">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto"></div>
+            <p className="mt-4 text-gray-200">Loading users...</p>
+          </div>
+        ) : users.length === 0 ? (
+          <div className="text-center py-12 backdrop-blur-md bg-white/5 rounded-xl border border-white/10">
+            <p className="text-gray-300 text-lg">No users found</p>
+            <p className="text-gray-400 text-sm mt-2">
+              {hasSearched ? 'Try a different search term' : 'No users in the system yet'}
+            </p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-white/20">
             <thead className="backdrop-blur-md bg-white/5">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider">
@@ -147,9 +232,6 @@ const UserManagement = () => {
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider">
                   Role
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider">
-                  Created At
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider">
                   Actions
@@ -171,9 +253,6 @@ const UserManagement = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     {getRoleBadge(user.role)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                    {new Date(user.created_at).toLocaleDateString()}
-                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     <button
                       onClick={() => handleDeleteUser(user.id)}
@@ -186,7 +265,8 @@ const UserManagement = () => {
               ))}
             </tbody>
           </table>
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Create User Modal */}

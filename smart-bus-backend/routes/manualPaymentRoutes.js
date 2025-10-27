@@ -14,9 +14,9 @@ const router = express.Router();
 router.post('/', requireAuth(['user']), createManualPayment);
 router.get('/my-payments', requireAuth(['user']), getMyPayments);
 
-// Admin routes
-router.get('/all', requireAuth(['admin']), getAllPayments);
-router.get('/pending', requireAuth(['admin']), getPendingPayments);
-router.patch('/:id/verify', requireAuth(['admin']), verifyPayment);
+// Admin and Operator routes
+router.get('/all', requireAuth(['admin', 'operator']), getAllPayments);
+router.get('/pending', requireAuth(['admin', 'operator']), getPendingPayments);
+router.patch('/:id/verify', requireAuth(['admin', 'operator']), verifyPayment);
 
 export default router;

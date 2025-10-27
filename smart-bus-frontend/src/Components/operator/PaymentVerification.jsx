@@ -3,33 +3,30 @@ import { CheckCircle, XCircle, Clock } from 'lucide-react';
 
 const PaymentVerification = () => {
   const [payments, setPayments] = useState([]);
+  const [allPayments, setAllPayments] = useState([]); // Keep all payments for stats
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [filter, setFilter] = useState('pending'); // pending, all, verified, rejected
 
   const fetchPayments = useCallback(async () => {
     try {
-      let url = 'http://localhost:5000/api/manual-payments/all';
-      if (filter === 'pending') {
-        url = 'http://localhost:5000/api/manual-payments/pending';
-      }
-
-      const response = await fetch(url, {
+      // Always fetch all payments for stats
+      const allResponse = await fetch('http://localhost:5000/api/operator/payments/all', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
       });
 
-      if (!response.ok) throw new Error('Failed to fetch payments');
+      if (!allResponse.ok) throw new Error('Failed to fetch payments');
+      const allData = await allResponse.json();
+      setAllPayments(allData);
       
-      let data = await response.json();
-      
-      // Filter on client side if not using pending endpoint
-      if (filter !== 'pending' && filter !== 'all') {
-        data = data.filter(p => p.status === filter);
+      // Filter based on current filter
+      if (filter === 'all') {
+        setPayments(allData);
+      } else {
+        setPayments(allData.filter(p => p.status === filter));
       }
-
-      setPayments(data);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -46,7 +43,7 @@ const PaymentVerification = () => {
     if (!window.confirm(`Are you sure you want to ${action} this payment?`)) return;
 
     try {
-      const response = await fetch(`http://localhost:5000/api/manual-payments/${paymentId}/verify`, {
+      const response = await fetch(`http://localhost:5000/api/operator/payments/${paymentId}/verify`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -117,7 +114,7 @@ const PaymentVerification = () => {
           <div className="flex items-center justify-between mb-2">
             <Clock className="w-8 h-8 opacity-80" />
             <span className="text-3xl font-bold">
-              {payments.filter(p => p.status === 'pending').length}
+              {allPayments.filter(p => p.status === 'pending').length}
             </span>
           </div>
           <p className="text-sm opacity-90">Pending Verification</p>
@@ -127,7 +124,7 @@ const PaymentVerification = () => {
           <div className="flex items-center justify-between mb-2">
             <CheckCircle className="w-8 h-8 opacity-80" />
             <span className="text-3xl font-bold">
-              {payments.filter(p => p.status === 'verified').length}
+              {allPayments.filter(p => p.status === 'verified').length}
             </span>
           </div>
           <p className="text-sm opacity-90">Verified</p>
@@ -137,7 +134,7 @@ const PaymentVerification = () => {
           <div className="flex items-center justify-between mb-2">
             <XCircle className="w-8 h-8 opacity-80" />
             <span className="text-3xl font-bold">
-              {payments.filter(p => p.status === 'rejected').length}
+              {allPayments.filter(p => p.status === 'rejected').length}
             </span>
           </div>
           <p className="text-sm opacity-90">Rejected</p>
