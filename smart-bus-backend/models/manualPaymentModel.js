@@ -15,7 +15,7 @@ export const getAll = async () => {
      FROM manual_payments mp
      LEFT JOIN users u ON u.id = mp.user_id
      LEFT JOIN users v ON v.id = mp.verified_by
-     ORDER BY mp.payment_time DESC`
+     ORDER BY mp.created_at DESC`
   );
   return rows;
 };
@@ -29,7 +29,7 @@ export const getByUserId = async (user_id) => {
      LEFT JOIN users v ON v.id = mp.verified_by
      LEFT JOIN cards c ON c.id = mp.card_id
      WHERE mp.user_id = ?
-     ORDER BY mp.payment_time DESC`,
+     ORDER BY mp.created_at DESC`,
     [user_id]
   );
   return rows;
@@ -41,7 +41,7 @@ export const getPending = async () => {
      FROM manual_payments mp
      LEFT JOIN users u ON u.id = mp.user_id
      WHERE mp.status = 'pending'
-     ORDER BY mp.payment_time ASC`
+     ORDER BY mp.created_at ASC`
   );
   return rows;
 };

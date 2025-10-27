@@ -1,13 +1,24 @@
 import { useState } from 'react';
-import ManualPaymentsMonitor from '../../components/admin/ManualPaymentsMonitor';
-import ControllerActivityMonitor from '../../components/admin/ControllerActivityMonitor';
-import { LogOut, DollarSign, Activity, Home, Menu } from 'lucide-react';
+import StaffActivityMonitor from '../../components/admin/StaffActivityMonitor';
+import AdminStats from '../../components/admin/AdminStats';
+import SystemReports from '../../components/admin/SystemReports';
+import SystemSettings from '../../components/admin/SystemSettings';
+import UserTypeStats from '../../components/admin/UserTypeStats';
+import StaffActivity from '../../components/admin/StaffActivity';
+// Import operator components for admin use
+import UserManagement from '../../components/operator/UserManagement';
+import PaymentVerification from '../../components/operator/PaymentVerification';
+import OperatorStats from '../../components/operator/OperatorStats';
+import { LogOut, Users, DollarSign, Activity, BarChart3, Home, Menu, Settings } from 'lucide-react';
 
 const AdminSidebar = ({ current, setCurrent, isExpanded, toggleExpanded }) => {
   const items = [
-    { id: 'overview', label: 'Overview', icon: Home },
-    { id: 'payments', label: 'Manual Payments', icon: DollarSign },
-    { id: 'controllers', label: 'Controller Activity', icon: Activity },
+    { id: 'overview', label: 'Dashboard', icon: Home },
+    { id: 'users', label: 'User Management', icon: Users },
+    { id: 'payments', label: 'Payment Verification', icon: DollarSign },
+    { id: 'activity', label: 'Staff Activity', icon: Activity },
+    { id: 'reports', label: 'System Reports', icon: BarChart3 },
+    { id: 'settings', label: 'Settings', icon: Settings },
     { id: 'logout', label: 'Log out', icon: LogOut },
   ];
   const mainItems = items.filter(it => it.id !== 'logout');
@@ -67,53 +78,6 @@ AdminSidebar.propTypes = {
   toggleExpanded: PropTypes.func.isRequired,
 };
 
-const Overview = () => {
-  return (
-    <div className="space-y-6">
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">Admin Dashboard Overview</h2>
-        <p className="text-gray-600 mb-6">
-          Welcome to the admin dashboard. Here you can monitor and manage the entire smart bus system.
-        </p>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg p-6 text-white">
-            <div className="text-sm font-medium opacity-90">Manual Payments</div>
-            <div className="text-4xl font-bold mt-2">Monitor</div>
-            <div className="text-sm mt-2 opacity-75">Approve or reject payment requests</div>
-          </div>
-
-          <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg p-6 text-white">
-            <div className="text-sm font-medium opacity-90">Controller Activity</div>
-            <div className="text-4xl font-bold mt-2">Track</div>
-            <div className="text-sm mt-2 opacity-75">Monitor validation and logs</div>
-          </div>
-
-          <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-lg p-6 text-white">
-            <div className="text-sm font-medium opacity-90">System Status</div>
-            <div className="text-4xl font-bold mt-2">Active</div>
-            <div className="text-sm mt-2 opacity-75">All systems operational</div>
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h3 className="text-xl font-bold text-gray-800 mb-4">Quick Actions</h3>
-        <div className="space-y-3">
-          <div className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition cursor-pointer">
-            <div className="font-medium text-gray-800">Review Pending Payments</div>
-            <div className="text-sm text-gray-600">Check and approve manual payment requests from users</div>
-          </div>
-          <div className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition cursor-pointer">
-            <div className="font-medium text-gray-800">Monitor Controller Activity</div>
-            <div className="text-sm text-gray-600">View validation logs and controller performance</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
 const AdminDashboard = () => {
   const [current, setCurrent] = useState('overview');
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
@@ -121,11 +85,27 @@ const AdminDashboard = () => {
   const renderContent = () => {
     switch (current) {
       case 'overview':
-        return <Overview />;
+        return (
+          <div className="space-y-6">
+            <h1 className="text-2xl font-semibold text-white mb-4">Admin Dashboard</h1>
+            <AdminStats />
+            <UserTypeStats />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+              <OperatorStats />
+              <StaffActivity />
+            </div>
+          </div>
+        );
+      case 'users':
+        return <UserManagement />;
       case 'payments':
-        return <ManualPaymentsMonitor />;
-      case 'controllers':
-        return <ControllerActivityMonitor />;
+        return <PaymentVerification />;
+      case 'activity':
+        return <StaffActivityMonitor />;
+      case 'reports':
+        return <SystemReports />;
+      case 'settings':
+        return <SystemSettings />;
       case 'logout':
         localStorage.removeItem('token');
         localStorage.removeItem('userId');

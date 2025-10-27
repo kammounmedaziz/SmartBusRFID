@@ -14,24 +14,35 @@ export const listUsers = async (req, res) => {
 
 export const searchUsers = async (req, res) => {
   try {
-    const { q } = req.query
-    
-    // If no query or empty, return empty array (don't list all users)
-    // Use listUsers endpoint for getting all users count
-    if (!q || q.trim().length === 0) {
-      return res.json([])
+    const { q, role } = req.query;
+
+    // If role is provided -> return users by role (with optional search)
+    if (role) {
+      let sql = `SELECT id, name, email, role FROM users WHERE role = ?`;
+      const params = [role];
+      
+      // Add search term if provided
+      if (q && q.trim().length > 0) {
+        const searchTerm = `%${q}%`;
+        sql += ` AND (name LIKE ? OR email LIKE ?)`;
+        params.push(searchTerm, searchTerm);
+      }
+      
+      sql += ` ORDER BY id DESC LIMIT 200`;
+      const [users] = await db.query(sql, params);
+      return res.json(users);
     }
 
-    const searchTerm = `%${q}%`
-    const [users] = await db.query(
-      `SELECT id, name, email, role, created_at 
-       FROM users 
-       WHERE name LIKE ? OR email LIKE ? 
-       ORDER BY created_at DESC 
-       LIMIT 50`,
-      [searchTerm, searchTerm]
-    )
-    res.json(users)
+    // If only search query provided (no role filter)
+    if (q && q.trim().length > 0) {
+      const searchTerm = `%${q}%`;
+      const sql = `SELECT id, name, email, role FROM users WHERE (name LIKE ? OR email LIKE ?) ORDER BY id DESC LIMIT 200`;
+      const [users] = await db.query(sql, [searchTerm, searchTerm]);
+      return res.json(users);
+    }
+
+    // No query and no role: return empty array to avoid exposing all users
+    return res.json([]);
   } catch (err) {
     console.error(err)
     res.status(500).json({ error: 'Server error' })

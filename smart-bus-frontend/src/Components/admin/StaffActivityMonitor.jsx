@@ -16,17 +16,17 @@ const StaffActivityMonitor = () => {
       const [validationsResponse, logsResponse] = await Promise.all([
         fetch('http://localhost:5000/api/controller/all-validations', {
           headers: { 'Authorization': `Bearer ${token}` }
-        }).catch(() => ({ ok: false, json: async () => [] })),
+        }).catch(() => ({ ok: false, json: async () => ({ data: [] }) })),
         fetch('http://localhost:5000/api/controller/all-logs', {
           headers: { 'Authorization': `Bearer ${token}` }
-        }).catch(() => ({ ok: false, json: async () => [] }))
+        }).catch(() => ({ ok: false, json: async () => ({ data: [] }) }))
       ]);
 
-      const validationsData = validationsResponse.ok ? await validationsResponse.json() : [];
-      const logsData = logsResponse.ok ? await logsResponse.json() : [];
+      const validationsData = validationsResponse.ok ? await validationsResponse.json() : { data: [] };
+      const logsData = logsResponse.ok ? await logsResponse.json() : { data: [] };
 
-      setValidations(validationsData || []);
-      setStaffLogs(logsData || []);
+      setValidations(validationsData.data || []);
+      setStaffLogs(logsData.data || []);
     } catch (err) {
       console.error('Error fetching data:', err);
       setValidations([]);
