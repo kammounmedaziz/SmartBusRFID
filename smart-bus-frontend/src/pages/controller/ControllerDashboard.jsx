@@ -2,13 +2,15 @@ import { useState } from 'react';
 import TicketValidator from '../../components/controller/TicketValidator';
 import ValidationHistory from '../../components/controller/ValidationHistory';
 import ControllerStats from '../../components/controller/ControllerStats';
-import { LogOut, ScanLine, History, BarChart3, Home, Menu } from 'lucide-react';
+import CardTester from '../../Components/controller/CardTester';
+import { LogOut, ScanLine, History, BarChart3, Home, Menu, Search } from 'lucide-react';
 import PropTypes from 'prop-types';
 
 const ControllerSidebar = ({ current, setCurrent, isExpanded, toggleExpanded }) => {
   const items = [
     { id: 'main', label: 'Dashboard', icon: Home },
     { id: 'validate', label: 'Validate Ticket', icon: ScanLine },
+    { id: 'test-card', label: 'Test Card', icon: Search },
     { id: 'history', label: 'My Validations', icon: History },
     { id: 'stats', label: 'My Stats', icon: BarChart3 },
     { id: 'logout', label: 'Log out', icon: LogOut },
@@ -88,6 +90,8 @@ const ControllerDashboard = () => {
         );
       case 'validate':
         return <TicketValidator />;
+      case 'test-card':
+        return <CardTester />;
       case 'history':
         return <ValidationHistory />;
       case 'stats':

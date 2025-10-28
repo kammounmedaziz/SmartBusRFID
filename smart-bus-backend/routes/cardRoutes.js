@@ -21,8 +21,8 @@ router.post('/', requireAuth(['admin']), createCard);
 // Create card for authenticated user
 router.post('/me', requireAuth(['user']), createCardForMe);
 
-// Scan card with ESP32 RFID reader (user must be authenticated)
-router.post('/me/scan-rfid', requireAuth(['user']), scanCardWithESP32);
+// Scan card with ESP32 RFID reader (user and controller must be authenticated)
+router.post('/me/scan-rfid', requireAuth(['user', 'controller']), scanCardWithESP32);
 
 // user-scoped: get cards for the authenticated user
 router.get('/me/cards', requireAuth(['user']), getMyCards);

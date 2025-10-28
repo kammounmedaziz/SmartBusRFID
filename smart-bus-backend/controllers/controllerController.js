@@ -167,3 +167,116 @@ export const getAllControllerLogs = async (req, res) => {
     res.status(500).json({ error: err.message || 'Failed to fetch logs' });
   }
 };
+
+// Test card and get last ticket information
+export const testCard = async (req, res) => {
+  try {
+    const { card_uid } = req.body;
+    const controller_id = req.user.id;
+
+    if (!card_uid) {
+      return res.status(400).json({ error: 'Card UID required' });
+    }
+
+    // Find card
+    const card = await Card.findByUid(card_uid);
+    if (!card) {
+      return res.status(404).json({ error: 'Card not found' });
+    }
+
+    // Get last transaction for this card
+    const [transactions] = await db.query(
+      'SELECT * FROM transactions WHERE card_id = ? ORDER BY timestamp DESC LIMIT 1',
+      [card.id]
+    );
+
+    const lastTransaction = transactions[0] || null;
+
+    // Get last ticket purchased/paid by the user using this card
+    const [tickets] = await db.query(
+      `SELECT t.*, 
+              tr.from_city, 
+              tr.to_city, 
+              tr.departure_time, 
+              tr.arrival_time,
+              tr.price as trip_price,
+              tr.bus_type,
+              u.name as validated_by_name
+       FROM tickets t 
+       LEFT JOIN trips tr ON t.trip_id = tr.id 
+       LEFT JOIN users u ON t.validated_by = u.id
+       WHERE t.card_uid = ? 
+       ORDER BY t.purchase_date DESC 
+       LIMIT 1`,
+      [card_uid]
+    );
+
+    const lastTicket = tickets[0] || null;
+
+    // Get last validation for this card
+    const [validations] = await db.query(
+      'SELECT tv.*, u.name as controller_name FROM ticket_validations tv LEFT JOIN users u ON tv.controller_id = u.id WHERE tv.card_id = ? ORDER BY tv.validation_time DESC LIMIT 1',
+      [card.id]
+    );
+
+    const lastValidation = validations[0] || null;
+
+    // Log controller action
+    await ControllerLog.log({
+      controller_id,
+      action_type: 'validation',
+      details: JSON.stringify({ action: 'card_test', card_uid, card_id: card.id, found: true })
+    });
+
+    res.json({
+      success: true,
+      card: {
+        id: card.id,
+        uid: card.uid,
+        balance: parseFloat(card.balance),
+        status: card.status,
+        created_at: card.created_at
+      },
+      last_transaction: lastTransaction ? {
+        id: lastTransaction.id,
+        amount: parseFloat(lastTransaction.amount),
+        type: lastTransaction.type,
+        description: lastTransaction.description,
+        created_at: lastTransaction.timestamp
+      } : null,
+      last_ticket: lastTicket ? {
+        id: lastTicket.id,
+        ticket_number: lastTicket.ticket_number,
+        trip: {
+          from_city: lastTicket.from_city,
+          to_city: lastTicket.to_city,
+          departure_time: lastTicket.departure_time,
+          arrival_time: lastTicket.arrival_time,
+          price: parseFloat(lastTicket.trip_price || 0),
+          bus_type: lastTicket.bus_type
+        },
+        passenger_name: lastTicket.passenger_name,
+        passenger_phone: lastTicket.passenger_phone,
+        travel_date: lastTicket.travel_date,
+        seat_number: lastTicket.seat_number,
+        amount_paid: parseFloat(lastTicket.amount_paid),
+        status: lastTicket.status,
+        purchase_date: lastTicket.purchase_date,
+        validation_time: lastTicket.validation_time,
+        validated_by: lastTicket.validated_by_name
+      } : null,
+      last_validation: lastValidation ? {
+        id: lastValidation.id,
+        location: lastValidation.location,
+        status: lastValidation.status,
+        fare_amount: parseFloat(lastValidation.fare_amount),
+        controller_name: lastValidation.controller_name,
+        created_at: lastValidation.validation_time
+      } : null
+    });
+
+  } catch (err) {
+    console.error('testCard error:', err);
+    res.status(500).json({ error: err.message || 'Failed to test card' });
+  }
+};

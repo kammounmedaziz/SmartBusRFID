@@ -2,7 +2,7 @@ import db from "../config/db.js";
 
 export const log = async ({ controller_id, action_type, details }) => {
   const [result] = await db.query(
-    "INSERT INTO controller_logs (controller_id, action_type, details) VALUES (?, ?, ?)",
+    "INSERT INTO controller_logs (controller_id, action_type, action_details) VALUES (?, ?, ?)",
     [controller_id, action_type, details]
   );
   return result.insertId;

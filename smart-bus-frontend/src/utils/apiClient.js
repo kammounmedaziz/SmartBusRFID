@@ -81,8 +81,8 @@ export async function rechargeCard(token, { uid, amount }) {
   return request('/api/cards/recharge', { method: 'POST', token, body: { uid, amount } });
 }
 
-export async function payFare(token, { uid, fare }) {
-  return request('/api/cards/pay', { method: 'POST', token, body: { uid, fare } });
+export async function testCard(token, cardUid) {
+  return request('/api/controller/test-card', { method: 'POST', token, body: { card_uid: cardUid } });
 }
 
 export async function createCard(token, { uid, user_id, balance = 0, status = 'active' }) {
@@ -112,8 +112,8 @@ export default {
   deleteMyCard,
   scanCardWithRFID,
   rechargeCard,
-  payFare,
   createCard,
   getCards,
   getTransactions,
+  testCard,
 };

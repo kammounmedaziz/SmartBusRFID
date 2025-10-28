@@ -6,13 +6,15 @@ import {
   getMyStats,
   logAction,
   getAllValidations,
-  getAllControllerLogs
+  getAllControllerLogs,
+  testCard
 } from "../controllers/controllerController.js";
 
 const router = express.Router();
 
 // Controller routes
 router.post('/validate', requireAuth(['controller']), validateTicket);
+router.post('/test-card', requireAuth(['controller']), testCard);
 router.get('/my-validations', requireAuth(['controller']), getMyValidations);
 router.get('/my-stats', requireAuth(['controller']), getMyStats);
 router.post('/log-action', requireAuth(['controller']), logAction);
