@@ -1,0 +1,42 @@
+# Smart Bus AI Server - Python Dependencies
+
+# Web Framework
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+python-multipart==0.0.6
+
+# Face Recognition
+face-recognition==1.3.0
+opencv-python==4.8.1.78
+dlib==19.24.2
+
+# Speech Recognition (Vosk - Offline)
+vosk==0.3.45
+
+# Text-to-Speech
+pyttsx3==2.90
+gTTS==2.4.0
+
+# Machine Learning
+scikit-learn==1.3.2
+numpy==1.24.3
+pandas==2.1.3
+
+# Database
+PyMySQL==1.1.0
+
+# Utilities
+Pillow==10.1.0
+python-dotenv==1.0.0
+
+# Optional: Deep Learning (if needed)
+# tensorflow==2.15.0
+# torch==2.1.0
+
+# Development
+pytest==7.4.3
+requests==2.31.0
+
+# Note: Install dlib separately if you encounter issues
+# Windows: pip install dlib-binary
+# Linux: Install cmake and build-essential first

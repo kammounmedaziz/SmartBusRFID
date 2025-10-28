@@ -45,7 +45,8 @@ export const me = async (req, res) => {
     const userId = req.user?.id
     if (!userId) return res.status(401).json({ error: 'Unauthorized' })
     // fetch from DB to return fresh info
-    const user = await User.findById ? await User.findById(userId) : await User.findByEmail(req.user.email || '')
+    // Use getById (available in userModel) to fetch user by id
+    const user = await User.getById(userId);
     if (!user) return res.status(404).json({ error: 'User not found' })
     res.json({ id: user.id, role: user.role, name: user.name, email: user.email })
   } catch (err) {

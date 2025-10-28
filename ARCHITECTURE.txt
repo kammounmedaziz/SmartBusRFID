@@ -1,0 +1,379 @@
+# Smart Bus RFID - Project Architecture
+
+## 📁 Root Structure
+
+```
+RFID PROJECT/
+├── smart-bus-backend/          # Node.js/Express Backend
+├── smart-bus-frontend/         # React + Vite Frontend
+├── start.ps1                   # PowerShell script to start both servers
+├── smoke-test.ps1              # Smoke test script
+└── README.md
+```
+
+---
+
+## 🔧 Backend Architecture (`smart-bus-backend/`)
+
+```
+smart-bus-backend/
+├── server.js                   # Main Express server entry point
+├── package.json                # Dependencies: express, mysql2, bcrypt, jwt, cors, etc.
+├── .env                        # Environment variables (DB credentials, JWT secret)
+│
+├── config/
+│   └── db.js                   # MariaDB/MySQL connection pool configuration
+│
+├── controllers/                # Business logic handlers
+│   ├── authController.js       # Login, register, /auth/me
+│   ├── adminController.js      # User search, CRUD, reports (admin/operator)
+│   ├── cardController.js       # Card CRUD, recharge, payment operations
+│   ├── operatorController.js   # Operator-specific logic (user search, stats)
+│   ├── controllerController.js # Controller validation logs, stats
+│   ├── manualPaymentController.js # Manual payment verification workflow
+│   └── tripController.js       # Trip/ticket booking (guest users)
+│
+├── models/                     # Database access layer (SQL queries)
+│   ├── userModel.js            # User CRUD: create, getAll, findByEmail, getById
+│   ├── cardModel.js            # Card operations: create, getByUserId, recharge, pay
+│   ├── transactionModel.js     # Transaction history
+│   ├── ticketValidationModel.js # Controller validation records
+│   ├── controllerLogModel.js   # Controller activity logs
+│   ├── manualPaymentModel.js   # Manual payment records
+│   └── tripModel.js            # Trip/ticket data
+│
+├── routes/                     # API endpoint definitions
+│   ├── authRoutes.js           # POST /auth/login, /auth/register, GET /auth/me
+│   ├── adminRoutes.js          # GET /api/users, /api/users/search, DELETE /api/users/:id
+│   ├── cardRoutes.js           # /api/cards/* (CRUD, recharge, payment)
+│   ├── operatorRoutes.js       # /api/operator/* (dashboard, user management)
+│   ├── controllerRoutes.js     # /api/controller/* (validation, logs)
+│   ├── manualPaymentRoutes.js  # /api/manual-payments/* (verification)
+│   ├── tripRoutes.js           # /api/trips, /api/tickets (guest booking)
+│   └── esp32Routes.js          # /api/rfid/* (ESP32 card scanning)
+│
+├── middleware/
+│   ├── auth.js                 # JWT verification + role-based access control
+│   └── errorHandler.js         # Centralized error handling
+│
+├── services/
+│   └── esp32SerialService.js   # Serial port communication with ESP32 RFID reader
+│
+├── scripts/                    # Database migrations/utilities
+│   ├── apply-002-enforce-card-user.js
+│   └── reassign-orphan-cards.js
+│
+├── tests/
+│   └── api.test.js             # Jest API tests
+│
+└── sql.sql                     # Database schema (CREATE TABLE statements)
+```
+
+### 🔑 Key Backend Features
+- **Authentication**: JWT-based with 4 roles: `admin`, `operator`, `user`, `controller`
+- **Database**: MariaDB with 9 tables (users, cards, transactions, validations, payments, trips, etc.)
+- **Role-based Access**: `requireAuth(['admin', 'operator'])` middleware
+- **ESP32 Integration**: Serial port service for RFID card scanning
+- **API Structure**: RESTful endpoints grouped by domain (auth, cards, payments, etc.)
+
+---
+
+## 🎨 Frontend Architecture (`smart-bus-frontend/`)
+
+```
+smart-bus-frontend/
+├── index.html
+├── vite.config.js              # Vite configuration
+├── package.json                # Dependencies: react, react-router-dom, axios, lucide-react
+├── tailwind.config.js          # TailwindCSS configuration
+│
+├── public/
+│   ├── vite.svg
+│   └── imgs/team/              # Team member images
+│
+└── src/
+    ├── main.jsx                # React app entry point
+    ├── App.jsx                 # Main app component with routing
+    ├── route.js                # Route definitions
+    ├── index.css               # Global styles (Tailwind)
+    │
+    ├── assets/
+    │   └── media/
+    │       └── Welcome to.png  # Logo/branding assets
+    │
+    ├── utils/
+    │   └── apiClient.js        # API wrapper (login, register, me, cards, etc.)
+    │
+    ├── Components/             # Reusable UI components
+    │   │
+    │   ├── auth/
+    │   │   └── Auth.jsx        # Login/Register form with role-based redirect
+    │   │
+    │   ├── ui/                 # Shared UI elements
+    │   │   ├── Background.jsx  # Animated gradient background
+    │   │   ├── Footer.jsx
+    │   │   ├── LoadingScreen.jsx
+    │   │   ├── MainNavbar.jsx
+    │   │   └── ProfileCard.jsx
+    │   │
+    │   ├── admin/              # Admin-specific components
+    │   │   ├── AdminStats.jsx              # System overview stats
+    │   │   ├── AdminUserManagement.jsx     # User CRUD (NOT USED - using operator's)
+    │   │   ├── UserTypeStats.jsx           # User role distribution
+    │   │   ├── StaffActivity.jsx           # Recent staff activity widget
+    │   │   ├── StaffActivityMonitor.jsx    # Full staff activity page
+    │   │   ├── ManualPaymentsMonitor.jsx   # Payment approval queue
+    │   │   ├── SystemReports.jsx           # Revenue analytics + CSV export
+    │   │   └── SystemSettings.jsx          # System configuration
+    │   │
+    │   ├── operator/           # Operator-specific components
+    │   │   ├── OperatorStats.jsx       # Dashboard stats
+    │   │   ├── UserManagement.jsx      # User search, create, delete
+    │   │   └── PaymentVerification.jsx # Manual payment approval
+    │   │
+    │   ├── controller/         # Controller-specific components
+    │   │   ├── ControllerStats.jsx     # Validation stats
+    │   │   ├── TicketValidator.jsx     # RFID card validation
+    │   │   └── ValidationHistory.jsx   # Past validations
+    │   │
+    │   ├── client/             # User/Client-specific components
+    │   │   ├── CardManagement.jsx      # View/manage RFID cards
+    │   │   ├── ActiveCards.jsx         # Active cards list
+    │   │   ├── AddCardForm.jsx         # Register new card
+    │   │   ├── CardItem.jsx            # Single card display
+    │   │   ├── ManualPayment.jsx       # Submit manual payment request
+    │   │   └── TransactionsList.jsx    # Transaction history
+    │   │
+    │   └── booking/            # Guest booking components
+    │       ├── TripList.jsx            # Available trips
+    │       ├── RouteSelector.jsx       # Select route
+    │       ├── CardScanner.jsx         # RFID card scanner for payment
+    │       ├── CardPayment.jsx         # Card payment processing
+    │       └── TicketConfirmation.jsx  # Booking confirmation
+    │
+    └── Pages/                  # Full page views
+        │
+        ├── static/             # Public pages (no auth required)
+        │   ├── HomePage.jsx    # Landing page
+        │   ├── WelcomeScreen.jsx
+        │   ├── About.jsx
+        │   └── Team.jsx
+        │
+        ├── booking/
+        │   └── GuestBooking.jsx    # Guest ticket booking flow
+        │
+        ├── admin/
+        │   └── AdminDashboard.jsx  # Admin panel with sidebar navigation
+        │
+        ├── operator/
+        │   └── OperatorDashboard.jsx # Operator panel
+        │
+        ├── controller/
+        │   └── ControllerDashboard.jsx # Controller validation interface
+        │
+        ├── client/
+        │   └── ClientDashboard.jsx # User dashboard (cards, payments, transactions)
+        │
+        └── 404Page.jsx
+```
+
+### 🎯 Frontend Features
+- **Role-based Routing**: Different dashboards for admin/operator/controller/user
+- **Glassmorphism UI**: Modern design with `backdrop-blur`, gradients, semi-transparent panels
+- **Authentication Flow**: Login → fetch user role → redirect to appropriate dashboard
+- **State Management**: React hooks (useState, useEffect, useCallback)
+- **API Integration**: Centralized `apiClient.js` for all backend calls
+- **Responsive Design**: TailwindCSS with mobile-first approach
+
+---
+
+## 🔐 User Roles & Access
+
+| Role | Dashboard Route | Capabilities |
+|------|----------------|--------------|
+| **Admin** | `/AdminDashboard` | All operator features + user type stats + staff activity monitoring + system reports |
+| **Operator** | `/operator` | User management, payment verification, dashboard stats |
+| **Controller** | `/controller` | Ticket validation, validation history, controller stats |
+| **User** | `/client` | Card management, manual payments, transaction history |
+| **Guest** | `/booking` | Book tickets with RFID card payment (no login) |
+
+---
+
+## 🗄️ Database Schema (9 Tables)
+
+```sql
+1. users              # All system users (admin/operator/user/controller)
+2. cards              # RFID cards linked to users
+3. transactions       # Card recharge/payment history
+4. ticket_validations # Controller validation records
+5. controller_logs    # Controller activity logs (login/logout/breaks)
+6. manual_payments    # Manual payment requests (pending/verified/rejected)
+7. trips              # Bus trip definitions (routes, times, prices)
+8. tickets            # Guest ticket bookings
+```
+
+---
+
+## 🚀 Startup Commands
+
+### Start Both Servers (Recommended)
+```powershell
+./start.ps1
+```
+
+### Or Start Separately
+
+**Backend:**
+```powershell
+cd smart-bus-backend
+npm start
+```
+Server runs on: `http://localhost:5000`
+
+**Frontend:**
+```powershell
+cd smart-bus-frontend
+npm run dev
+```
+App runs on: `http://localhost:5173`
+
+---
+
+## 🔄 Request Flow Example
+
+### Login Flow
+```
+1. User → POST /auth/login (email, password)
+2. Backend → Validates credentials → Returns JWT token
+3. Frontend → Stores token in localStorage
+4. Frontend → GET /auth/me (with token) → Gets user role
+5. Frontend → Redirects based on role:
+   - admin → /AdminDashboard
+   - operator → /operator
+   - controller → /controller
+   - user → /client
+```
+
+### Card Recharge Flow (Operator)
+```
+1. Operator → POST /api/cards/recharge (uid, amount) + JWT token
+2. Backend → requireAuth(['operator', 'admin']) → Verifies token
+3. Backend → Updates card balance → Creates transaction record
+4. Backend → Returns updated card data
+5. Frontend → Displays success message
+```
+
+---
+
+## 🛠️ Tech Stack Summary
+
+### Backend
+- **Runtime**: Node.js v22
+- **Framework**: Express.js
+- **Database**: MariaDB
+- **Authentication**: JWT (jsonwebtoken)
+- **Password Hashing**: bcrypt
+- **Serial Communication**: serialport (ESP32 RFID reader)
+- **Testing**: Jest
+
+### Frontend
+- **Framework**: React 18
+- **Build Tool**: Vite
+- **Routing**: react-router-dom
+- **HTTP Client**: Axios
+- **Styling**: TailwindCSS
+- **Icons**: lucide-react
+- **Charts**: recharts (for analytics)
+
+---
+
+## 📝 Key Configuration Files
+
+### Backend
+- `.env` - Database credentials, JWT secret, ESP32 port
+- `sql.sql` - Complete database schema
+- `server.js` - Route registration and middleware setup
+
+### Frontend
+- `vite.config.js` - Vite build configuration
+- `tailwind.config.js` - TailwindCSS theme customization
+- `src/route.js` - React Router route definitions
+
+---
+
+## 🔧 Environment Variables (Backend `.env`)
+
+```env
+# Database
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=your_password
+DB_NAME=smartbus
+
+# JWT
+JWT_SECRET=your-secret-key
+
+# Serial Port (Optional - for ESP32 RFID reader)
+ESP32_USB_PORT=COM5
+
+# Server
+PORT=5000
+```
+
+---
+
+## 🎨 Design System
+
+### Color Palette
+- **Primary**: Cyan (`cyan-500`, `cyan-600`) - Main brand color
+- **Admin**: Red shades for admin-specific UI
+- **Operator**: Blue shades for operator UI
+- **Controller**: Purple shades for controller UI
+- **User**: Green shades for user/client UI
+- **Background**: Dark gradients (`gray-900`, `indigo-900`)
+
+### Components Style
+- **Glassmorphism**: `backdrop-blur-xl bg-white/10 border border-white/20`
+- **Cards**: Rounded corners (`rounded-2xl`), shadow (`shadow-2xl`)
+- **Buttons**: Gradient backgrounds, hover effects, icon + text
+- **Tables**: Striped rows, hover states, responsive overflow
+
+---
+
+## 📊 API Endpoints Summary
+
+### Authentication
+- `POST /auth/login` - User login
+- `POST /auth/register` - User registration (role=user)
+- `GET /auth/me` - Get current user info
+
+### Admin/Operator
+- `GET /api/users` - List all users
+- `GET /api/users/search?q=&role=` - Search users by role
+- `POST /api/users` - Create user (any role)
+- `DELETE /api/users/:id` - Delete user
+
+### Cards
+- `GET /api/cards` - List all cards (admin/operator)
+- `GET /api/cards/my-cards` - User's cards
+- `POST /api/cards/recharge` - Recharge card (operator)
+- `POST /api/cards/me/recharge` - User recharge own card
+- `POST /api/cards/pay` - Pay fare (operator)
+
+### Manual Payments
+- `GET /api/manual-payments/all` - All payments (operator)
+- `GET /api/manual-payments/pending` - Pending payments
+- `PATCH /api/manual-payments/:id/verify` - Approve/reject
+
+### Controller
+- `GET /api/controller/all-validations` - All validations
+- `GET /api/controller/all-logs` - Controller activity logs
+- `POST /api/controller/validate` - Validate ticket
+
+### Trips (Guest Booking)
+- `GET /api/trips` - Available trips
+- `POST /api/tickets` - Book ticket with card payment
+
+---
+
+This architecture supports a complete bus ticketing system with RFID card payments, role-based access control, and real-time validation capabilities.
