@@ -1,404 +1,267 @@
 # Smart Bus AI Server
 
-Python FastAPI microservice for face recognition, voice assistance, and predictive analytics.
+FastAPI server providing face recognition and AI services for the Smart Bus RFID system.
 
-## 🚀 Features
+## Features
 
-- **Face Recognition**: Register and verify user faces using dlib-based face_recognition
-- **Voice Assistant**: Offline speech recognition (Vosk) and text-to-speech (pyttsx3)
-- **Predictive Analytics**: ML-based low balance prediction using scikit-learn
-- **REST API**: FastAPI endpoints for seamless integration with Node.js backend
-- **Offline Operation**: All models run locally without cloud dependencies
+- **Face Authentication**
+  - Register user faces
+  - Verify faces for login
+  - Delete registered faces
+  - Multiple face embeddings per user for better accuracy
 
-## 📋 Prerequisites
+- **Voice Assistant** (Basic)
+  - Natural language query processing
+  - Intent recognition
+  - Voice command support
 
-- Python 3.8 or higher
-- CMake (for dlib installation)
-- Visual Studio Build Tools (Windows) or build-essential (Linux)
-- Node.js backend running on port 5000
+- **Predictive Analytics** (Basic)
+  - Low balance predictions
+  - Usage pattern analysis
 
-## 🔧 Installation
+## Installation
 
-### 1. Create Virtual Environment
+### 1. Install Python Dependencies
 
-```bash
-cd smart-bus-ai
+```powershell
+# Using the installation script (recommended)
+.\install-dependencies.ps1
+
+# OR manually
 python -m venv venv
-
-# Windows
-venv\Scripts\activate
-
-# Linux/Mac
-source venv/bin/activate
-```
-
-### 2. Install Dependencies
-
-```bash
-# Install requirements
+.\venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-
-# If dlib fails on Windows, try:
-pip install dlib-binary
-
-# Or download pre-built wheel from:
-# https://github.com/z-mahmud22/Dlib_Windows_Python3.x
 ```
 
-### 3. Download Vosk Model (for Speech Recognition)
+### 2. Verify Installation
 
-```bash
-# Download lightweight English model (39MB)
-# https://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip
-
-# Extract to:
-smart-bus-ai/models/vosk/vosk-model-small-en-us-0.15/
-
-# Alternative: Download larger model for better accuracy (1.8GB)
-# vosk-model-en-us-0.22
+```powershell
+python -c "import deepface; print('DeepFace OK')"
+python -c "import cv2; print('OpenCV OK')"
+python -c "import tensorflow; print('TensorFlow OK')"
 ```
 
-### 4. Configure Database Connection (Optional)
+## Usage
 
-Create `.env` file:
+### Start the Server
 
-```env
-DB_HOST=localhost
-DB_PORT=3306
-DB_USER=root
-DB_PASSWORD=your_password
-DB_NAME=smart_bus_db
-```
-
-## 🏃 Running the Server
-
-### Start AI Server
-
-```bash
-# Development mode (auto-reload)
+```powershell
+# Using Python directly
 python app.py
 
-# Or using uvicorn directly
-uvicorn app:app --reload --host 0.0.0.0 --port 8000
+# OR using the start script from project root
+.\start.ps1
 ```
 
-### Production Mode
+The server will start on `http://localhost:8000`
 
-```bash
-uvicorn app:app --host 0.0.0.0 --port 8000 --workers 4
-```
+### API Documentation
 
-Server will be available at:
-- API: http://localhost:8000
-- Interactive Docs: http://localhost:8000/docs
-- Alternative Docs: http://localhost:8000/redoc
+Once running, visit:
+- **Swagger UI**: http://localhost:8000/docs
+- **ReDoc**: http://localhost:8000/redoc
 
-## 📚 API Endpoints
+## API Endpoints
 
 ### Health Check
-
-```http
+```
 GET /health
 ```
 
 ### Face Recognition
 
-```http
+#### Register Face
+```
 POST /ai/face/register
-Content-Type: application/json
-
-{
+Body: {
   "user_id": 123,
   "image": "base64_encoded_image",
   "name": "John Doe"
 }
 ```
 
-```http
+#### Verify Face
+```
 POST /ai/face/verify
-Content-Type: application/json
-
-{
+Body: {
   "image": "base64_encoded_image"
+}
+Response: {
+  "matched": true,
+  "user_id": 123,
+  "confidence": 0.89,
+  "name": "John Doe"
 }
 ```
 
-```http
-GET /ai/face/list
+#### Delete Face
+```
 DELETE /ai/face/delete/{user_id}
+```
+
+#### List Registered Faces
+```
+GET /ai/face/list
 ```
 
 ### Voice Assistant
 
-```http
+#### Process Query
+```
 POST /ai/voice/query
-Content-Type: application/json
-
-{
+Body: {
   "text": "What is my balance?"
 }
 ```
 
-```http
+#### Get Commands
+```
 GET /ai/voice/commands
 ```
 
-### Predictions
-
-```http
-POST /ai/predict/low-balance
-Content-Type: application/json
-
-[
-  {
-    "card_id": 1,
-    "balance": 5000.0,
-    "avg_daily_spend": 1200.0,
-    "days_since_recharge": 15,
-    "transaction_count": 30
-  }
-]
-```
-
-```http
-POST /ai/predict/train
-GET /ai/predict/model-info
-```
-
 ### Statistics
-
-```http
+```
 GET /ai/stats
 ```
 
-## 🧪 Testing
+## Architecture
 
-```bash
-# Run all tests
-pytest tests/test_ai_endpoints.py -v
+### Face Recognition Flow
 
-# Run specific test
-pytest tests/test_ai_endpoints.py::test_voice_text_query -v
+1. **Registration**:
+   - Client captures face image → base64 encode
+   - POST to `/ai/face/register` with user_id
+   - DeepFace generates face embedding (512-dimensional vector)
+   - Embedding stored in pickle database (`face_db.pkl`)
 
-# Generate coverage report
-pytest --cov=core --cov=utils tests/
+2. **Verification**:
+   - Client captures face image → base64 encode
+   - POST to `/ai/face/verify`
+   - DeepFace generates embedding for input image
+   - Compare with all stored embeddings using cosine similarity
+   - Return matched user_id if similarity > 0.7
+
+3. **Storage**:
+   - Database file: `face_db.pkl`
+   - Structure: `{user_id: {name, embeddings[], created_at, updated_at}}`
+   - Supports multiple embeddings per user for robustness
+
+### Technology Stack
+
+- **FastAPI**: Modern Python web framework
+- **DeepFace**: Face recognition library (uses Facenet model)
+- **OpenCV**: Image processing
+- **TensorFlow**: Deep learning backend
+- **Uvicorn**: ASGI server
+
+## Configuration
+
+### Environment Variables
+
+Create `.env` file:
+```env
+# Server
+HOST=0.0.0.0
+PORT=8000
+
+# Face Recognition
+FACE_DETECTION_THRESHOLD=0.7
+FACE_MODEL=Facenet
+
+# Database
+DB_FILE=face_db.pkl
+
+# CORS
+CORS_ORIGINS=http://localhost:5000,http://localhost:5173
 ```
-
-## 🔗 Node.js Integration
-
-The Node.js backend includes `aiService.js` for easy integration:
-
-```javascript
-const aiService = require('./services/aiService');
-
-// Verify face
-const result = await aiService.verifyFace(imageBase64);
-if (result.matched) {
-  console.log(`User ${result.userId} verified with ${result.confidence}% confidence`);
-}
-
-// Query voice
-const response = await aiService.queryVoiceText("How do I recharge?");
-console.log(response.response);
-
-// Predict low balance
-const predictions = await aiService.predictLowBalance(cardData);
-console.log(`${predictions.summary.high_risk} cards at high risk`);
-```
-
-## 📁 Project Structure
-
-```
-smart-bus-ai/
-├── app.py                      # FastAPI application
-├── requirements.txt            # Python dependencies
-├── .env                        # Environment variables
-│
-├── core/                       # Core AI modules
-│   ├── face_recognition.py     # Face recognition service
-│   ├── voice_assistant.py      # Voice assistant service
-│   └── prediction_model.py     # ML prediction service
-│
-├── models/                     # Model storage
-│   ├── faces/                  # Face embeddings (.npy)
-│   ├── ml/                     # ML models (.pkl)
-│   └── vosk/                   # Vosk speech models
-│
-├── utils/                      # Utility modules
-│   ├── preprocess.py           # Image preprocessing
-│   ├── audio_tools.py          # Audio utilities
-│   └── db_connector.py         # Database connector
-│
-└── tests/                      # Test suite
-    └── test_ai_endpoints.py    # API tests
-```
-
-## 🎯 Use Cases
-
-### 1. Face Authentication for Controllers
-
-```javascript
-// Controller scans their face
-const faceImage = captureImage();
-const result = await aiService.verifyFace(faceImage);
-
-if (result.matched) {
-  // Allow controller to access validation features
-  redirectTo('/controller/dashboard');
-}
-```
-
-### 2. Voice Assistant for Users
-
-```javascript
-// User asks a question
-const query = "When is the next bus?";
-const response = await aiService.queryVoiceText(query);
-
-// Display response
-showMessage(response.response);
-
-// Play audio response if available
-if (response.audioResponse) {
-  playAudio(response.audioResponse);
-}
-```
-
-### 3. Automated Low Balance Alerts
-
-```javascript
-// Daily cron job
-cron.schedule('0 9 * * *', async () => {
-  // Get all active cards
-  const cards = await getActiveCardsWithStats();
-  
-  // Predict risks
-  const predictions = await aiService.predictLowBalance(cards);
-  
-  // Send SMS to high-risk users
-  predictions.predictions
-    .filter(p => p.risk_level === 'high')
-    .forEach(async (p) => {
-      await sendSMS(p.card_id, `Your balance is low (${p.current_balance} RWF). Please recharge soon.`);
-    });
-});
-```
-
-## ⚙️ Configuration
 
 ### Face Recognition Settings
 
-Adjust tolerance in `core/face_recognition.py`:
+- **Model**: Facenet (default) - Good balance of speed and accuracy
+- **Threshold**: 0.7 (70% similarity required for match)
+- **Enforcement**: `enforce_detection=False` (allows processing even if face unclear)
 
-```python
-# Lower = stricter matching (0.4-0.6 recommended)
-# Higher = more lenient (0.6-0.8)
-FaceRecognitionService(tolerance=0.6)
-```
+## Integration with Backend
 
-### Voice Assistant Intents
+The Node.js backend (`smart-bus-backend/services/aiService.js`) connects to this server:
 
-Add custom intents in `core/voice_assistant.py`:
-
-```python
-self.intent_patterns = {
-    "custom_intent": {
-        "patterns": [r"your", r"regex", r"patterns"],
-        "response": "Your custom response"
-    }
-}
-```
-
-### Prediction Model
-
-Retrain with real data:
-
-```python
-# Collect historical data
-training_data = db.get_training_data(days=90)
-
-# Train model
-result = prediction_service.train_model(training_data)
-print(f"Accuracy: {result['accuracy']:.2%}")
-```
-
-## 🐛 Troubleshooting
-
-### dlib Installation Fails
-
-**Windows:**
-```bash
-pip install dlib-binary
-# Or download wheel from: https://github.com/z-mahmud22/Dlib_Windows_Python3.x
-```
-
-**Linux:**
-```bash
-sudo apt-get install cmake build-essential
-pip install dlib
-```
-
-### Vosk Model Not Found
-
-Download and extract model to `models/vosk/` directory:
-```bash
-# Download from https://alphacephei.com/vosk/models
-# Extract: models/vosk/vosk-model-small-en-us-0.15/
-```
-
-### Face Recognition Not Working
-
-- Ensure image is well-lit and face is clearly visible
-- Try adjusting tolerance parameter
-- Check that face is not too small in image
-
-### Port 8000 Already in Use
-
-```bash
-# Use different port
-uvicorn app:app --port 8001
-```
-
-Then update Node.js backend:
 ```javascript
-AI_SERVER_URL=http://localhost:8001
+// Backend calls
+await aiService.registerFace(userId, imageBase64, name);
+const result = await aiService.verifyFace(imageBase64);
+await aiService.deleteFace(userId);
 ```
 
-## 📊 Performance
+## Troubleshooting
 
-- Face Verification: ~200-500ms
-- Voice Query (text): ~50-100ms
-- Prediction (100 cards): ~100-200ms
-- Model Training: 1-5 seconds (depending on data size)
+### DeepFace Model Download
 
-## 🔒 Security
+On first run, DeepFace downloads the Facenet model (~100MB). Wait for completion:
+```
+Downloading model weights...
+Model loaded successfully
+```
 
-- All face embeddings stored locally (not in database)
-- No cloud API calls - fully offline
-- JWT authentication via main backend
-- CORS restricted to backend/frontend origins
+### TensorFlow Warnings
 
-## 📝 License
+Ignore TensorFlow optimization warnings (e.g., "AVX2 instructions"). The server works fine.
 
-MIT License - Smart Bus System
+### Face Detection Fails
 
-## 🤝 Contributing
+- Ensure good lighting
+- Face should be clearly visible
+- Image quality should be reasonable
+- Try multiple registration photos for better accuracy
 
-1. Fork the repository
-2. Create feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing-feature`)
-5. Open Pull Request
+### Port Already in Use
 
-## 📧 Support
+```powershell
+# Check what's using port 8000
+netstat -ano | findstr :8000
 
-For issues and questions:
-- Email: support@smartbus.rw
-- GitHub Issues: [Create Issue](https://github.com/your-repo/issues)
+# Kill the process
+taskkill /PID <PID> /F
+```
 
-## 🎉 Acknowledgments
+## Database Management
 
-- [face_recognition](https://github.com/ageitgey/face_recognition) by Adam Geitgey
-- [Vosk](https://alphacephei.com/vosk/) by Alpha Cephei
-- [FastAPI](https://fastapi.tiangolo.com/) by Sebastián Ramírez
-- [scikit-learn](https://scikit-learn.org/) by scikit-learn developers
+### Backup Face Database
+```powershell
+Copy-Item face_db.pkl face_db_backup_$(Get-Date -Format 'yyyyMMdd').pkl
+```
+
+### Clear Database
+```powershell
+Remove-Item face_db.pkl
+```
+
+### Inspect Database
+```python
+import pickle
+with open('face_db.pkl', 'rb') as f:
+    db = pickle.load(f)
+    print(f"Registered users: {len(db)}")
+    for user_id, data in db.items():
+        print(f"User {user_id}: {data['name']}, {len(data['embeddings'])} embeddings")
+```
+
+## Performance
+
+- **Registration**: ~2-3 seconds per face
+- **Verification**: ~1-2 seconds per verification
+- **Model**: Facenet (512D embeddings)
+- **Accuracy**: ~95% with good lighting and multiple embeddings
+
+## Future Enhancements
+
+- [ ] MySQL integration instead of pickle database
+- [ ] Llama 3.1 integration for voice assistant
+- [ ] Advanced predictive analytics
+- [ ] Face liveness detection (anti-spoofing)
+- [ ] Multiple face model support
+- [ ] Batch face processing
+- [ ] API authentication/rate limiting
+
+## License
+
+Part of Smart Bus RFID System

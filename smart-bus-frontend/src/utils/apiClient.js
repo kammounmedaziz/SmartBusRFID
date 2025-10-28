@@ -26,13 +26,25 @@ export async function login(email, password) {
   return request('/auth/login', { method: 'POST', body: { email, password } });
 }
 
-export async function register({ name, email, password }) {
+export async function loginWithFace(imageBase64) {
+  return request('/auth/login', { method: 'POST', body: { loginMethod: 'face', image: imageBase64 } });
+}
+
+export async function register({ name, email, password, face_image }) {
   // Backend always assigns 'user' role to new registrations
-  return request('/auth/register', { method: 'POST', body: { name, email, password } });
+  return request('/auth/register', { method: 'POST', body: { name, email, password, face_image } });
 }
 
 export async function me(token) {
   return request('/auth/me', { method: 'GET', token });
+}
+
+export async function enableFaceAuth(token, imageBase64) {
+  return request('/auth/me/settings/face', { method: 'PUT', token, body: { action: 'enable', image: imageBase64 } });
+}
+
+export async function disableFaceAuth(token) {
+  return request('/auth/me/settings/face', { method: 'PUT', token, body: { action: 'disable' } });
 }
 
 // Cards
@@ -87,8 +99,11 @@ export async function getTransactions(token) {
 
 export default {
   login,
+  loginWithFace,
   register,
   me,
+  enableFaceAuth,
+  disableFaceAuth,
   getMyCards,
   createCardForMe,
   payWithMyCard,

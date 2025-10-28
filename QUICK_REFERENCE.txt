@@ -1,0 +1,35 @@
+# 🚀 SmartBus Quick Reference
+
+## Start Everything
+```powershell
+.\start.ps1
+```
+Opens 3 windows: AI Server, Backend, Frontend
+
+## Stop Everything
+```powershell
+.\stop.ps1
+```
+
+## Check Status
+```powershell
+.\status.ps1
+```
+
+## URLs
+- Frontend: http://localhost:5173
+- Backend: http://localhost:5000
+- AI Server: http://localhost:8000
+
+## Face Auth Features
+✅ Register with face during signup
+✅ Login with face recognition
+✅ Enable/disable in user settings
+
+## Troubleshoot
+```powershell
+cd smart-bus-ai
+.\check-dependencies.ps1
+```
+
+**Need help?** See `AUTO_START_SUMMARY.md` or `FACE_AUTH_INTEGRATION.md`

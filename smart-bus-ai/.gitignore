@@ -1,41 +1,25 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-
-# Virtual Environment
+# Virtual environment
+.venv/
 venv/
-ENV/
-env/
 
-# Environment Variables
+# Face recognition database (contains sensitive face embeddings)
+face_db.pkl
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environment variables
 .env
+.env.local
 
-# IDEs
+# IDE files
 .vscode/
 .idea/
-*.swp
-*.swo
-*~
 
-# OS
+# OS files
 .DS_Store
 Thumbs.db
 
@@ -43,26 +27,6 @@ Thumbs.db
 *.log
 logs/
 
-# Model Files (large binary files)
-models/vosk/*
-!models/vosk/.gitkeep
-models/faces/*.npy
-models/ml/*.pkl
-
-# Temporary Files
-temp_*.wav
-temp_*.jpg
-temp_*.png
-
-# Testing
-.pytest_cache/
-.coverage
-htmlcov/
-.tox/
-
-# Database
-*.db
-*.sqlite
-
-# Jupyter
-.ipynb_checkpoints/
+# Temporary files
+*.tmp
+*.temp

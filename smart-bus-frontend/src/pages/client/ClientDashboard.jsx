@@ -3,7 +3,8 @@ import ActiveCards from '../../components/client/ActiveCards';
 import TransactionsList from '../../components/client/TransactionsList';
 import CardManagement from '../../components/client/CardManagement';
 import ManualPayment from '../../components/client/ManualPayment';
-import { LogOut, CreditCard, List, Home, Menu, DollarSign, Info } from 'lucide-react';
+import FaceAuthSettings from '../../Components/faceAuth/FaceAuthSettings';
+import { LogOut, CreditCard, List, Home, Menu, DollarSign, Info, Settings } from 'lucide-react';
 
 const ClientSidebar = ({ current, setCurrent, isExpanded, toggleExpanded }) => {
   const items = [
@@ -11,6 +12,7 @@ const ClientSidebar = ({ current, setCurrent, isExpanded, toggleExpanded }) => {
     { id: 'cards', label: 'Card Management', icon: CreditCard },
     { id: 'transactions', label: 'Transactions', icon: List },
     { id: 'manual-payment', label: 'Manual Payment', icon: DollarSign },
+    { id: 'settings', label: 'Settings', icon: Settings },
     { id: 'logout', label: 'Log out', icon: LogOut },
   ];
   const mainItems = items.filter(it => it.id !== 'logout');
@@ -94,6 +96,13 @@ const ClientDashboard = () => {
         return <TransactionsList />;
       case 'manual-payment':
         return <ManualPayment />;
+      case 'settings':
+        return (
+          <div>
+            <h1 className="text-2xl font-semibold mb-6 text-white">Settings</h1>
+            <FaceAuthSettings token={localStorage.getItem('token')} />
+          </div>
+        );
       case 'logout':
         // clear token and redirect to home
         localStorage.removeItem('token');

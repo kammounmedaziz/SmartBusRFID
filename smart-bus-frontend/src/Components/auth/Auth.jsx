@@ -2,10 +2,11 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   User, Mail, Lock, Phone, MapPin, CreditCard,
-  Eye, EyeOff, ArrowRight, UserPlus, LogIn
+  Eye, EyeOff, ArrowRight, UserPlus, LogIn, Scan
 } from 'lucide-react';
 import PropTypes from 'prop-types';
 import api from '../../utils/apiClient';
+import FaceCapture from '../faceAuth/FaceCapture';
 
 const AnimatedBackground = () => {
   const blobRefs = useRef([]);
@@ -142,12 +143,14 @@ const SignInComponent = ({ onSubmit }) => {
     username: '',
     password: ''
   });
+  const [showFaceCapture, setShowFaceCapture] = useState(false);
+  const [loginMethod, setLoginMethod] = useState('password'); // 'password' or 'face'
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = async (e) => {
+  const handlePasswordLogin = async (e) => {
     e.preventDefault();
     try {
       const data = await api.login(formData.email || formData.username, formData.password);
@@ -172,30 +175,113 @@ const SignInComponent = ({ onSubmit }) => {
     }
   };
 
+  const handleFaceLogin = () => {
+    setShowFaceCapture(true);
+  };
+
+  const handleFaceCapture = async (imageBase64) => {
+    setShowFaceCapture(false);
+    try {
+      const data = await api.loginWithFace(imageBase64);
+      const token = data?.token;
+      if (!token) throw new Error('Face login failed: no token returned');
+      
+      localStorage.setItem('token', token);
+      // fetch user info
+      try {
+        const me = await api.me(token);
+        localStorage.setItem('userId', me.id);
+        localStorage.setItem('userRole', me.role);
+        localStorage.setItem('username', me.name || me.email || '');
+      } catch (err) {
+        console.warn('Could not fetch /auth/me', err);
+      }
+      onSubmit({ token });
+    } catch (error) {
+      console.error('Face login error:', error);
+      alert(error.message || 'Face not recognized. Please try again.');
+    }
+  };
+
   return (
     <div className="space-y-6">
-      <InputField 
-        icon={User} 
-        type="text" 
-        placeholder="Username" 
-        value={formData.username} 
-        onChange={e => handleInputChange('username', e.target.value)} 
-        required 
-      />
-      <InputField 
-        icon={Lock} 
-        type="password" 
-        placeholder="Password" 
-        value={formData.password} 
-        onChange={e => handleInputChange('password', e.target.value)} 
-        required 
-      />
-      <button 
-        onClick={handleSubmit} 
-  className="w-full py-3 bg-gradient-to-r from-cyan-500 to-cyan-600 text-white rounded-lg flex items-center justify-center gap-2"
-      >
-        Sign In <ArrowRight className="w-4 h-4" />
-      </button>
+      {/* Login Method Tabs */}
+      <div className="flex gap-2 bg-gray-800/50 rounded-lg p-1">
+        <button
+          onClick={() => setLoginMethod('password')}
+          className={`flex-1 py-2 px-4 rounded-md transition-all ${
+            loginMethod === 'password'
+              ? 'bg-cyan-500 text-white'
+              : 'text-gray-400 hover:text-white'
+          }`}
+        >
+          <Lock className="w-4 h-4 inline mr-2" />
+          Password
+        </button>
+        <button
+          onClick={() => setLoginMethod('face')}
+          className={`flex-1 py-2 px-4 rounded-md transition-all ${
+            loginMethod === 'face'
+              ? 'bg-cyan-500 text-white'
+              : 'text-gray-400 hover:text-white'
+          }`}
+        >
+          <Scan className="w-4 h-4 inline mr-2" />
+          Face ID
+        </button>
+      </div>
+
+      {loginMethod === 'password' ? (
+        <>
+          <InputField 
+            icon={User} 
+            type="text" 
+            placeholder="Email or Username" 
+            value={formData.username} 
+            onChange={e => handleInputChange('username', e.target.value)} 
+            required 
+          />
+          <InputField 
+            icon={Lock} 
+            type="password" 
+            placeholder="Password" 
+            value={formData.password} 
+            onChange={e => handleInputChange('password', e.target.value)} 
+            required 
+          />
+          <button 
+            onClick={handlePasswordLogin} 
+            className="w-full py-3 bg-gradient-to-r from-cyan-500 to-cyan-600 text-white rounded-lg flex items-center justify-center gap-2"
+          >
+            Sign In <ArrowRight className="w-4 h-4" />
+          </button>
+        </>
+      ) : (
+        <div className="text-center space-y-4 py-8">
+          <div className="w-24 h-24 mx-auto bg-cyan-500/10 rounded-full flex items-center justify-center">
+            <Scan className="w-12 h-12 text-cyan-400" />
+          </div>
+          <div>
+            <h3 className="text-white font-semibold mb-2">Face Authentication</h3>
+            <p className="text-gray-400 text-sm">Click below to scan your face</p>
+          </div>
+          <button
+            onClick={handleFaceLogin}
+            className="py-3 px-8 bg-gradient-to-r from-cyan-500 to-cyan-600 text-white rounded-lg inline-flex items-center justify-center gap-2"
+          >
+            <Scan className="w-5 h-5" />
+            Scan Face to Login
+          </button>
+        </div>
+      )}
+
+      {showFaceCapture && (
+        <FaceCapture
+          onCapture={handleFaceCapture}
+          onCancel={() => setShowFaceCapture(false)}
+          title="Face Login"
+        />
+      )}
     </div>
   );
 };
@@ -215,9 +301,17 @@ const SignUpComponent = ({ onSubmit }) => {
     password: '',
     confirm_password: '',
   });
+  const [enableFaceReg, setEnableFaceReg] = useState(false);
+  const [showFaceCapture, setShowFaceCapture] = useState(false);
+  const [faceImage, setFaceImage] = useState(null);
 
   const handleInputChange = (field, value) =>
     setFormData(prev => ({ ...prev, [field]: value }));
+
+  const handleFaceCapture = (imageBase64) => {
+    setFaceImage(imageBase64);
+    setShowFaceCapture(false);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -228,7 +322,12 @@ const SignUpComponent = ({ onSubmit }) => {
 
     try {
       // Backend always registers users with 'user' role, no need to send role parameter
-      const data = await api.register({ name: `${formData.first_name} ${formData.last_name}`, email: formData.email, password: formData.password });
+      const data = await api.register({ 
+        name: `${formData.first_name} ${formData.last_name}`, 
+        email: formData.email, 
+        password: formData.password,
+        face_image: faceImage // Optional face registration
+      });
       onSubmit(data);
     } catch (error) {
       alert("Registration failed:\n" + error.message);
@@ -241,15 +340,67 @@ const SignUpComponent = ({ onSubmit }) => {
         <InputField icon={User} type="text" placeholder="First Name" value={formData.first_name} onChange={e => handleInputChange('first_name', e.target.value)} required />
         <InputField icon={User} type="text" placeholder="Last Name" value={formData.last_name} onChange={e => handleInputChange('last_name', e.target.value)} required />
       </div>
-  <InputField icon={CreditCard} type="text" placeholder="Card Number" value={formData.cin} onChange={e => handleInputChange('cin', e.target.value)} required />
+      <InputField icon={CreditCard} type="text" placeholder="Card Number" value={formData.cin} onChange={e => handleInputChange('cin', e.target.value)} required />
       <InputField icon={Mail} type="email" placeholder="Email" value={formData.email} onChange={e => handleInputChange('email', e.target.value)} required />
       <InputField icon={Phone} type="tel" placeholder="Phone" value={formData.phone_num} onChange={e => handleInputChange('phone_num', e.target.value)} required />
       <InputField icon={MapPin} type="date" placeholder="Birth Date" value={formData.birth_date} onChange={e => handleInputChange('birth_date', e.target.value)} required />
       <InputField icon={Lock} type="password" placeholder="Password" value={formData.password} onChange={e => handleInputChange('password', e.target.value)} required />
       <InputField icon={Lock} type="password" placeholder="Confirm Password" value={formData.confirm_password} onChange={e => handleInputChange('confirm_password', e.target.value)} required />
-  <button onClick={handleSubmit} className="w-full py-3 bg-gradient-to-r from-cyan-500 to-cyan-600 text-white rounded-lg flex items-center justify-center gap-2">
+      
+      {/* Optional Face Registration */}
+      <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700/50">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <Scan className="w-5 h-5 text-cyan-400" />
+            <span className="text-white font-medium">Enable Face Login (Optional)</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setEnableFaceReg(!enableFaceReg)}
+            className={`w-12 h-6 rounded-full transition-colors relative ${enableFaceReg ? 'bg-cyan-500' : 'bg-gray-600'}`}
+          >
+            <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-transform ${enableFaceReg ? 'translate-x-6' : 'translate-x-0.5'}`}></div>
+          </button>
+        </div>
+        {enableFaceReg && (
+          <div className="space-y-3">
+            <p className="text-gray-400 text-sm">Register your face now for quick login later</p>
+            {!faceImage ? (
+              <button
+                type="button"
+                onClick={() => setShowFaceCapture(true)}
+                className="w-full py-2 px-4 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 rounded-lg transition-colors flex items-center justify-center gap-2"
+              >
+                <Scan className="w-4 h-4" />
+                Capture Face
+              </button>
+            ) : (
+              <div className="flex items-center justify-between bg-green-500/10 border border-green-500/30 rounded-lg p-3">
+                <span className="text-green-400 text-sm">✓ Face captured</span>
+                <button
+                  type="button"
+                  onClick={() => setFaceImage(null)}
+                  className="text-gray-400 hover:text-white text-sm"
+                >
+                  Remove
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      <button onClick={handleSubmit} className="w-full py-3 bg-gradient-to-r from-cyan-500 to-cyan-600 text-white rounded-lg flex items-center justify-center gap-2">
         Create Account <ArrowRight className="w-4 h-4" />
       </button>
+
+      {showFaceCapture && (
+        <FaceCapture
+          onCapture={handleFaceCapture}
+          onCancel={() => setShowFaceCapture(false)}
+          title="Register Your Face"
+        />
+      )}
     </div>
   );
 };

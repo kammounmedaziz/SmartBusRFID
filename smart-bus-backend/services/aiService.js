@@ -3,7 +3,7 @@
  * Node.js service to communicate with Python AI server
  */
 
-const axios = require('axios');
+import axios from 'axios';
 
 const AI_SERVER_URL = process.env.AI_SERVER_URL || 'http://localhost:8000';
 
@@ -294,5 +294,5 @@ class AIService {
   }
 }
 
-// Export singleton instance
-module.exports = new AIService();
+// Export singleton instance (ESM)
+export default new AIService();
